@@ -16,5 +16,6 @@ namespace Ecommerce.Domain.Entities
         public virtual Category Category { get; set; }
         public int BrandId { get; set; }
         public virtual Brand Brand { get; set; }
+        public DateTime CreatedDate { get; set; }
     }
 }

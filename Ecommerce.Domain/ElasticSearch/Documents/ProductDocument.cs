@@ -13,8 +13,11 @@ namespace Ecommerce.Domain.ElasticSearch.Documents
         public string Description { get; set; }
         public decimal Price { get; set; }
         public int CategoryId { get; set; }
+        public string CategoryName { get; set; }
         public List<int> CategoryPath { get; set; }
         public int BrandId { get; set; }
         public string BrandName { get; set; }
+        public DateTime CreatedDate { get; set; }
+        public string[] NameSuggest { get; set; }
     }
 }

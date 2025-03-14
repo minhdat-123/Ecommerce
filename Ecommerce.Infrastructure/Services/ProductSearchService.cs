@@ -90,11 +90,11 @@ namespace Ecommerce.Infrastructure.Services
                     Value= query.BrandId.Value
                 });
             }
-            if (boolQuery.Filter.Count > 0)
+            if (filterQueries.Count > 0)
             {
                 boolQuery.Filter = filterQueries.ToArray();
             }
-            if (boolQuery.Must.Count == 0 && boolQuery.Filter.Count == 0)
+            if ((boolQuery.Must == null && boolQuery.Filter == null) || (boolQuery.Must.Count == 0 && boolQuery.Filter.Count == 0))
             {
                 searchRequest.Query = new MatchAllQuery();
             }
@@ -133,7 +133,8 @@ namespace Ecommerce.Infrastructure.Services
                 Name = d.Name,
                 Description = d.Description,
                 Price = d.Price,
-                CategoryId = d.CategoryId
+                CategoryId = d.CategoryId,
+                CreatedDate = d.CreatedDate
             }).ToList() : new List<Product>();
         }
 

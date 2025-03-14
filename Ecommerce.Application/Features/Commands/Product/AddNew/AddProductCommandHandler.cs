@@ -38,7 +38,10 @@ namespace Ecommerce.Application.Features.Commands.Product.AddNew
                 Description = product.Description,
                 Price = product.Price,
                 CategoryId = product.CategoryId,
-                CategoryPath = categoryPath
+                CategoryPath = categoryPath,
+                BrandId=product.BrandId,
+                BrandName=product.Brand.Name,
+                NameSuggest=new string[] {product.Name,product.Name+" "+product.Brand.Name,product.Name+" "+product.Brand.Name+" "+product.Category.Name }
             };
             await _productRepository.AddProductAsync(product);
             await _productSearchService.IndexProductAsync(document);
