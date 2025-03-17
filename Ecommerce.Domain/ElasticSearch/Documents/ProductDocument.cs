@@ -10,6 +10,7 @@ namespace Ecommerce.Domain.ElasticSearch.Documents
     {
         public int Id { get; set; }
         public string Name { get; set; }
+        public string Keyword { get; set; }
         public string Description { get; set; }
         public decimal Price { get; set; }
         public int CategoryId { get; set; }

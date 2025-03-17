@@ -53,6 +53,7 @@ namespace Ecommerce.Api.Controllers
               [FromQuery] decimal? maxPrice = null,
               [FromQuery] int? categoryId = null,
               [FromQuery] int? parentCategoryId=null,
+              [FromQuery] int? brandId=null,
               [FromQuery] string sortBy = "",
               [FromQuery] int page = 1,
               [FromQuery] int pageSize = 10)
@@ -64,6 +65,7 @@ namespace Ecommerce.Api.Controllers
                 MaxPrice = maxPrice,
                 CategoryId = categoryId,
                 ParentCategoryId=parentCategoryId,
+                BrandId= brandId,
                 SortBy = sortBy,
                 Page = page,
                 PageSize = pageSize

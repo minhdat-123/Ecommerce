@@ -19,6 +19,7 @@ namespace Ecommerce.Infrastructure.Services
         public ProductSearchService(ElasticsearchClient elasticClient)
         {
             _elasticClient = elasticClient;
+            Task.Run(async () => await CreateProductsIndexAsync()).Wait();
         }
 
         public async Task<List<Product>> SearchProductsAsync(string query)
@@ -85,16 +86,16 @@ namespace Ecommerce.Infrastructure.Services
             }
             if (query.BrandId.HasValue)
             {
-                filterQueries.Add(new TermQuery("BrandId")
+                filterQueries.Add(new TermQuery("brandId")
                 {
-                    Value= query.BrandId.Value
+                    Value = query.BrandId.Value
                 });
             }
             if (filterQueries.Count > 0)
             {
                 boolQuery.Filter = filterQueries.ToArray();
             }
-            if ((boolQuery.Must == null && boolQuery.Filter == null) || (boolQuery.Must.Count == 0 && boolQuery.Filter.Count == 0))
+            if (boolQuery.Must == null && boolQuery.Filter == null)
             {
                 searchRequest.Query = new MatchAllQuery();
             }
@@ -111,16 +112,16 @@ namespace Ecommerce.Infrastructure.Services
                 switch (query.SortBy.ToLower())
                 {
                     case "price-asc":
-                        searchRequest.Sort.Add(SortOptions.Field("price",new FieldSort {Order=SortOrder.Asc }));
+                        searchRequest.Sort.Add(SortOptions.Field("price", new FieldSort { Order = SortOrder.Asc }));
                         break;
                     case "price-desc":
                         searchRequest.Sort.Add(SortOptions.Field("price", new FieldSort { Order = SortOrder.Desc }));
                         break;
                     case "name-asc":
-                        searchRequest.Sort.Add(SortOptions.Field("name",new FieldSort {Order=SortOrder.Asc }));
+                        searchRequest.Sort.Add(SortOptions.Field("keyword", new FieldSort { Order = SortOrder.Asc }));
                         break;
                     case "name-desc":
-                        searchRequest.Sort.Add(SortOptions.Field("name", new FieldSort { Order = SortOrder.Desc }));
+                        searchRequest.Sort.Add(SortOptions.Field("keyword", new FieldSort { Order = SortOrder.Desc }));
                         break;
                 }
             }
@@ -148,6 +149,40 @@ namespace Ecommerce.Infrastructure.Services
         {
             await _elasticClient.DeleteAsync<Product>(id, idx => idx.Index("products"));
         }
+        private async Task CreateProductsIndexAsync()
+        {
+            var indexName = "products";
+
+            var existsResponse = await _elasticClient.Indices.ExistsAsync(indexName);
+            if (existsResponse.Exists)
+            {
+                return;
+            }
+
+            var createIndexResponse = await _elasticClient.Indices.CreateAsync<ProductDocument>(
+                indexName,
+                c => c.Mappings(m => m.Properties(per => per
+                    .IntegerNumber(i => i.Id)
+                    .Text(i => i.Name)
+                    .Keyword(k=>k.Keyword)
+                    .Text(i => i.Description)
+                    .DoubleNumber(i => i.Price)
+                    .IntegerNumber(i => i.CategoryId)
+                    .Text(i => i.CategoryName)
+                    .IntegerNumber(i => i.CategoryPath)
+                    .IntegerNumber(i => i.BrandId)
+                    .Text(i => i.BrandName)
+                    .Date(i => i.CreatedDate)
+                    .Completion(i => i.NameSuggest)
+                ))
+            );
+
+            if (!createIndexResponse.IsValidResponse)
+            {
+                throw new Exception($"Failed to create index: {createIndexResponse.DebugInformation}");
+            }
+        }
+
     }
 
 }

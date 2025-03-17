@@ -35,6 +35,7 @@ namespace Ecommerce.Application.Features.Commands.Product.AddNew
             {
                 Id = product.Id,
                 Name = product.Name,
+                Keyword=product.Name,
                 Description = product.Description,
                 Price = product.Price,
                 CategoryId = product.CategoryId,
