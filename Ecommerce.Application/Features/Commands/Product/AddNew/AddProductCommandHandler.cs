@@ -42,7 +42,7 @@ namespace Ecommerce.Application.Features.Commands.Product.AddNew
                 CategoryPath = categoryPath,
                 BrandId=product.BrandId,
                 BrandName=product.Brand.Name,
-                NameSuggest=new string[] {product.Name,product.Name+" "+product.Brand.Name,product.Name+" "+product.Brand.Name+" "+product.Category.Name }
+                NameSuggest=new CompletionField() {input= new string[] { product.Name, product.Name + " " + product.Brand.Name, product.Name + " " + product.Brand.Name + " " + product.Category.Name } }
             };
             await _productRepository.AddProductAsync(product);
             await _productSearchService.IndexProductAsync(document);

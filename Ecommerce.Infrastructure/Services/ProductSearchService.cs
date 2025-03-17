@@ -3,7 +3,11 @@ using Ecommerce.Application.Interfaces;
 using Ecommerce.Domain.ElasticSearch.Documents;
 using Ecommerce.Domain.Entities;
 using Elastic.Clients.Elasticsearch;
+using Elastic.Clients.Elasticsearch.Core.Search;
+using Elastic.Clients.Elasticsearch.Mapping;
+using Elastic.Clients.Elasticsearch.Nodes;
 using Elastic.Clients.Elasticsearch.QueryDsl;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,7 +23,7 @@ namespace Ecommerce.Infrastructure.Services
         public ProductSearchService(ElasticsearchClient elasticClient)
         {
             _elasticClient = elasticClient;
-            Task.Run(async () => await CreateProductsIndexAsync()).Wait();
+            //Task.Run(async () => await CreateProductsIndexAsync()).Wait();
         }
 
         public async Task<List<Product>> SearchProductsAsync(string query)
@@ -138,7 +142,11 @@ namespace Ecommerce.Infrastructure.Services
                 CreatedDate = d.CreatedDate
             }).ToList() : new List<Product>();
         }
-
+        public async Task<List<string>> SuggestionSearchAsync(string query)
+        {
+            var suggestResponse = await GetCompletionSuggestionsAsync("products", "nameSuggest",query,10);
+            return suggestResponse.SelectMany(o => o.Options).Select(o=>o.Text).ToList();
+        }
 
 
         public async Task IndexProductAsync(ProductDocument product)
@@ -181,6 +189,27 @@ namespace Ecommerce.Infrastructure.Services
             {
                 throw new Exception($"Failed to create index: {createIndexResponse.DebugInformation}");
             }
+        }
+        private async Task<IReadOnlyCollection<CompletionSuggest<ProductDocument>>> GetCompletionSuggestionsAsync(string indexName, string fieldName, string prefix, int size = 5)
+        {
+            var response = await _elasticClient.SearchAsync<ProductDocument>(s => s
+            .Index(indexName)
+            .Size(0)
+            .Suggest(sg=>sg
+            .Suggesters(st=>st.Add("completion-suggestions",fc=>fc.Completion(new CompletionSuggester
+            {
+                Field = fieldName,
+                Size = size,
+                SkipDuplicates = true
+            }).Prefix(prefix)))
+            )
+            );
+
+            if (!response.IsValidResponse)
+            {
+                throw new Exception($"Error getting completion suggestions: {response.ElasticsearchServerError?.Error}");
+            }
+            return response.Suggest.GetCompletion("completion-suggestions");
         }
 
     }

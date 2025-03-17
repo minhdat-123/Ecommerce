@@ -6,6 +6,10 @@ using System.Threading.Tasks;
 
 namespace Ecommerce.Domain.ElasticSearch.Documents
 {
+    public class CompletionField
+    {
+        public string[] input { get; set; }
+    }
     public class ProductDocument
     {
         public int Id { get; set; }
@@ -19,6 +23,6 @@ namespace Ecommerce.Domain.ElasticSearch.Documents
         public int BrandId { get; set; }
         public string BrandName { get; set; }
         public DateTime CreatedDate { get; set; }
-        public string[] NameSuggest { get; set; }
+        public CompletionField NameSuggest { get; set; }
     }
 }

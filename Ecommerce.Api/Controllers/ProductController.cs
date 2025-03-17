@@ -2,6 +2,7 @@
 using Ecommerce.Application.Features.Commands.Product.Delete;
 using Ecommerce.Application.Features.Queries.Product.GetList;
 using Ecommerce.Application.Features.Queries.Product.Search;
+using Ecommerce.Application.Features.Queries.Product.Suggestion;
 using Ecommerce.Application.Interfaces;
 using Ecommerce.Domain.Entities;
 using Microsoft.AspNetCore.Http;
@@ -18,17 +19,20 @@ namespace Ecommerce.Api.Controllers
         private readonly ICommandHandler<DeleteProductCommand> _deleteProductHandler;
         private readonly IQueryHandler<GetProductsQuery, List<Domain.Entities.Product>> _getProductsHandler;
         private readonly IQueryHandler<SearchProductsQuery, List<Domain.Entities.Product>> _searchProductsHandler;
+        private readonly IQueryHandler<SuggestionSearchQuery, List<string>> _suggestionSearchHandler;
 
         public ProductController(
             ICommandHandler<AddProductCommand> addProductHandler,
             ICommandHandler<DeleteProductCommand> deleteProductHandler,
             IQueryHandler<GetProductsQuery, List<Product>> getProductsHandler,
-            IQueryHandler<SearchProductsQuery, List<Product>> searchProductsHandler)
+            IQueryHandler<SearchProductsQuery, List<Product>> searchProductsHandler,
+            IQueryHandler<SuggestionSearchQuery, List<string>> suggestionSearchHandler)
         {
             _addProductHandler = addProductHandler;
             _deleteProductHandler = deleteProductHandler;
             _getProductsHandler = getProductsHandler;
             _searchProductsHandler = searchProductsHandler;
+            _suggestionSearchHandler = suggestionSearchHandler;
         }
 
         [HttpPost]
@@ -72,6 +76,17 @@ namespace Ecommerce.Api.Controllers
             };
             var products = await _searchProductsHandler.HandleAsync(searchQuery);
             return Ok(products);
+        }
+
+        [HttpGet("suggestions")]
+        public async Task<IActionResult> GetSuggestions([FromQuery] string query)
+        {
+            var suggestionQuery = new SuggestionSearchQuery
+            {
+                Query = query
+            };
+            var suggestions = await _suggestionSearchHandler.HandleAsync(suggestionQuery);
+            return Ok(suggestions);
         }
 
         [HttpDelete("{id}")]

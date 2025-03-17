@@ -13,6 +13,7 @@ namespace Ecommerce.Application.Interfaces
     {
         Task<List<Product>> SearchProductsAsync(string query); // Keep for backward compatibility
         Task<List<Product>> SearchProductsAsync(SearchProductsQuery query); // New overload
+        Task<List<string>> SuggestionSearchAsync(string query);
         Task IndexProductAsync(ProductDocument product);
         Task DeleteProductAsync(int id);
     }
