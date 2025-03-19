@@ -28,21 +28,24 @@ namespace Ecommerce.Application.Features.Commands.Product.AddNew
                 Name = command.Name,
                 Description = command.Description,
                 Price = command.Price,
-                CategoryId=command.CategoryId
+                CategoryId = command.CategoryId,
+                BrandId = command.BrandId,
+                CreatedDate = DateTime.UtcNow
             };
             var categoryPath = await _categoryRepository.GetCategoryPathAsync(product.CategoryId);
             var document = new ProductDocument
             {
                 Id = product.Id,
                 Name = product.Name,
-                Keyword=product.Name,
+                Keyword = product.Name,
                 Description = product.Description,
                 Price = product.Price,
                 CategoryId = product.CategoryId,
                 CategoryPath = categoryPath,
-                BrandId=product.BrandId,
-                BrandName=product.Brand.Name,
-                NameSuggest=new CompletionField() {input= new string[] { product.Name, product.Name + " " + product.Brand.Name, product.Name + " " + product.Brand.Name + " " + product.Category.Name } }
+                BrandId = product.BrandId,
+                BrandName = product.Brand?.Name,
+                CreatedDate = product.CreatedDate,
+                NameSuggest = new CompletionField() {input = new string[] { product.Name, product.Name + " " + (product.Brand?.Name ?? ""), product.Name + " " + (product.Brand?.Name ?? "") + " " + (product.Category?.Name ?? "") } }
             };
             await _productRepository.AddProductAsync(product);
             await _productSearchService.IndexProductAsync(document);

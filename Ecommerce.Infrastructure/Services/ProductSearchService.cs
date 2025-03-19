@@ -151,6 +151,10 @@ namespace Ecommerce.Infrastructure.Services
 
         public async Task IndexProductAsync(ProductDocument product)
         {
+            // Ensure the index exists before indexing
+            await EnsureIndexExistsAsync();
+            
+            // Index the product
             await _elasticClient.IndexAsync(product, i => i.Index("products"));
         }
         public async Task DeleteProductAsync(int id)
@@ -211,7 +215,16 @@ namespace Ecommerce.Infrastructure.Services
             }
             return response.Suggest.GetCompletion("completion-suggestions");
         }
+        private async Task EnsureIndexExistsAsync()
+        {
+            var indexName = "products";
 
+            var existsResponse = await _elasticClient.Indices.ExistsAsync(indexName);
+            if (!existsResponse.Exists)
+            {
+                await CreateProductsIndexAsync();
+            }
+        }
     }
 
 }

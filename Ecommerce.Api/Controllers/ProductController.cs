@@ -1,5 +1,6 @@
 ﻿using Ecommerce.Application.Features.Commands.Product.AddNew;
 using Ecommerce.Application.Features.Commands.Product.Delete;
+using Ecommerce.Application.Features.Commands.Product.Index;
 using Ecommerce.Application.Features.Queries.Product.GetList;
 using Ecommerce.Application.Features.Queries.Product.Search;
 using Ecommerce.Application.Features.Queries.Product.Suggestion;
@@ -17,6 +18,7 @@ namespace Ecommerce.Api.Controllers
     {
         private readonly ICommandHandler<AddProductCommand> _addProductHandler;
         private readonly ICommandHandler<DeleteProductCommand> _deleteProductHandler;
+        private readonly ICommandHandler<IndexProductsCommand> _indexProductsHandler;
         private readonly IQueryHandler<GetProductsQuery, List<Domain.Entities.Product>> _getProductsHandler;
         private readonly IQueryHandler<SearchProductsQuery, List<Domain.Entities.Product>> _searchProductsHandler;
         private readonly IQueryHandler<SuggestionSearchQuery, List<string>> _suggestionSearchHandler;
@@ -24,12 +26,14 @@ namespace Ecommerce.Api.Controllers
         public ProductController(
             ICommandHandler<AddProductCommand> addProductHandler,
             ICommandHandler<DeleteProductCommand> deleteProductHandler,
+            ICommandHandler<IndexProductsCommand> indexProductsHandler,
             IQueryHandler<GetProductsQuery, List<Product>> getProductsHandler,
             IQueryHandler<SearchProductsQuery, List<Product>> searchProductsHandler,
             IQueryHandler<SuggestionSearchQuery, List<string>> suggestionSearchHandler)
         {
             _addProductHandler = addProductHandler;
             _deleteProductHandler = deleteProductHandler;
+            _indexProductsHandler = indexProductsHandler;
             _getProductsHandler = getProductsHandler;
             _searchProductsHandler = searchProductsHandler;
             _suggestionSearchHandler = suggestionSearchHandler;
@@ -97,6 +101,21 @@ namespace Ecommerce.Api.Controllers
                 var command = new DeleteProductCommand { Id = id };
                 await _deleteProductHandler.HandleAsync(command);
                 return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("index")]
+        public async Task<IActionResult> IndexProducts()
+        {
+            try
+            {
+                var command = new IndexProductsCommand();
+                await _indexProductsHandler.HandleAsync(command);
+                return Ok(new { message = "Products indexed successfully" });
             }
             catch (Exception ex)
             {

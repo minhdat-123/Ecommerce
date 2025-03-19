@@ -21,5 +21,10 @@ namespace Ecommerce.Infrastructure.Repositories
                 .Where(b => b.BrandCategories.Any(bc => bc.CategoryId == categoryId))
                 .ToListAsync();
         }
+
+        public async Task<Brand> GetBrandByIdAsync(int id)
+        {
+            return await _context.Brands.FindAsync(id);
+        }
     }
 }
