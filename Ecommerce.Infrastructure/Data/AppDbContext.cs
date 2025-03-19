@@ -14,6 +14,7 @@ namespace Ecommerce.Infrastructure.Data
         public DbSet<Product> Products { get; set; }
         public DbSet<Order> Orders { get; set; }
         public DbSet<Category> Categories { get; set; }
+        public DbSet<SearchConfig> SearchConfigs { get; set; }
 
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -45,6 +46,10 @@ namespace Ecommerce.Infrastructure.Data
                 .HasOne(bc => bc.Category)
                 .WithMany(c => c.BrandCategories)
                 .HasForeignKey(bc => bc.CategoryId);
+
+            modelBuilder.Entity<SearchConfig>()
+                .Property(sc => sc.Type)
+                .HasConversion<int>();
         }
 
     }

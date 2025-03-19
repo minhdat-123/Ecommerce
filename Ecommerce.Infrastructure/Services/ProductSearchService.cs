@@ -19,10 +19,12 @@ namespace Ecommerce.Infrastructure.Services
     public class ProductSearchService : IProductSearchService
     {
         private readonly ElasticsearchClient _elasticClient;
+        private readonly ISearchConfigRepository _searchConfigRepository;
 
-        public ProductSearchService(ElasticsearchClient elasticClient)
+        public ProductSearchService(ElasticsearchClient elasticClient, ISearchConfigRepository searchConfigRepository)
         {
             _elasticClient = elasticClient;
+            _searchConfigRepository = searchConfigRepository;
             //Task.Run(async () => await CreateProductsIndexAsync()).Wait();
         }
 
@@ -171,22 +173,50 @@ namespace Ecommerce.Infrastructure.Services
                 return;
             }
 
+            // Get active stemming configuration
+            var stemmingConfigs = await _searchConfigRepository.GetConfigsByTypeAsync(SearchConfigType.Stemming);
+            var activeStemmer = stemmingConfigs.FirstOrDefault(sc => sc.IsActive)?.Value ?? "english";
+
+            // Get active synonym configuration
+            var synonymConfigs = await _searchConfigRepository.GetConfigsByTypeAsync(SearchConfigType.Synonym);
+            var activeSynonyms = synonymConfigs.FirstOrDefault(sc => sc.IsActive)?.Value ?? string.Empty;
+            var synonymsList = ParseSynonyms(activeSynonyms);
+
             var createIndexResponse = await _elasticClient.Indices.CreateAsync<ProductDocument>(
                 indexName,
-                c => c.Mappings(m => m.Properties(per => per
-                    .IntegerNumber(i => i.Id)
-                    .Text(i => i.Name)
-                    .Keyword(k=>k.Keyword)
-                    .Text(i => i.Description)
-                    .DoubleNumber(i => i.Price)
-                    .IntegerNumber(i => i.CategoryId)
-                    .Text(i => i.CategoryName)
-                    .IntegerNumber(i => i.CategoryPath)
-                    .IntegerNumber(i => i.BrandId)
-                    .Text(i => i.BrandName)
-                    .Date(i => i.CreatedDate)
-                    .Completion(i => i.NameSuggest)
-                ))
+                c => c
+                    .Settings(s => s
+                        .Analysis(a => a
+                            .Analyzers(an => an
+                                .Custom("product_analyzer", ca => ca
+                                    .Tokenizer("standard")
+                                    .Filter(new string[] { "lowercase", "product_stemmer", "product_synonyms" })
+                                )
+                            )
+                            .TokenFilters(tf => tf
+                                .Stemmer("product_stemmer", st => st
+                                    .Language(activeStemmer)
+                                )
+                                .Synonym("product_synonyms", sy => sy
+                                    .Synonyms(synonymsList.ToArray())
+                                )
+                            )
+                        )
+                    )
+                    .Mappings(m => m.Properties(per => per
+                        .IntegerNumber(i => i.Id)
+                        .Text(i => i.Name, t => t.Analyzer("product_analyzer"))
+                        .Keyword(k => k.Keyword)
+                        .Text(i => i.Description, t => t.Analyzer("product_analyzer"))
+                        .DoubleNumber(i => i.Price)
+                        .IntegerNumber(i => i.CategoryId)
+                        .Text(i => i.CategoryName)
+                        .IntegerNumber(i => i.CategoryPath)
+                        .IntegerNumber(i => i.BrandId)
+                        .Text(i => i.BrandName)
+                        .Date(i => i.CreatedDate)
+                        .Completion(i => i.NameSuggest)
+                    ))
             );
 
             if (!createIndexResponse.IsValidResponse)
@@ -225,6 +255,16 @@ namespace Ecommerce.Infrastructure.Services
                 await CreateProductsIndexAsync();
             }
         }
-    }
+        private List<string> ParseSynonyms(string synonymsText)
+        {
+            if (string.IsNullOrWhiteSpace(synonymsText))
+                return new List<string>();
 
+            return synonymsText
+                .Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(line => line.Trim())
+                .Where(line => !string.IsNullOrWhiteSpace(line))
+                .ToList();
+        }
+    }
 }
