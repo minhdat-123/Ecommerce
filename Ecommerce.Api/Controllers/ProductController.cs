@@ -20,7 +20,7 @@ namespace Ecommerce.Api.Controllers
         private readonly ICommandHandler<DeleteProductCommand> _deleteProductHandler;
         private readonly ICommandHandler<IndexProductsCommand> _indexProductsHandler;
         private readonly IQueryHandler<GetProductsQuery, List<Domain.Entities.Product>> _getProductsHandler;
-        private readonly IQueryHandler<SearchProductsQuery, List<Domain.Entities.Product>> _searchProductsHandler;
+        private readonly IQueryHandler<SearchProductsQuery, List<Domain.ElasticSearch.Documents.ProductDocument>> _searchProductsHandler;
         private readonly IQueryHandler<SuggestionSearchQuery, List<string>> _suggestionSearchHandler;
 
         public ProductController(
@@ -28,7 +28,7 @@ namespace Ecommerce.Api.Controllers
             ICommandHandler<DeleteProductCommand> deleteProductHandler,
             ICommandHandler<IndexProductsCommand> indexProductsHandler,
             IQueryHandler<GetProductsQuery, List<Product>> getProductsHandler,
-            IQueryHandler<SearchProductsQuery, List<Product>> searchProductsHandler,
+            IQueryHandler<SearchProductsQuery, List<Domain.ElasticSearch.Documents.ProductDocument>> searchProductsHandler,
             IQueryHandler<SuggestionSearchQuery, List<string>> suggestionSearchHandler)
         {
             _addProductHandler = addProductHandler;

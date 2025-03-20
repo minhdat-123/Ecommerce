@@ -11,8 +11,8 @@ namespace Ecommerce.Application.Interfaces
 {
     public interface IProductSearchService
     {
-        Task<List<Product>> SearchProductsAsync(string query); // Keep for backward compatibility
-        Task<List<Product>> SearchProductsAsync(SearchProductsQuery query); // New overload
+        Task<List<ProductDocument>> SearchProductsAsync(string query); // Keep for backward compatibility
+        Task<List<ProductDocument>> SearchProductsAsync(SearchProductsQuery query); // New overload
         Task<List<string>> SuggestionSearchAsync(string query);
         Task IndexProductAsync(ProductDocument product);
         Task DeleteProductAsync(int id);

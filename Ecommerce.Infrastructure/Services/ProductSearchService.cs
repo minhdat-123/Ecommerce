@@ -28,12 +28,12 @@ namespace Ecommerce.Infrastructure.Services
             //Task.Run(async () => await CreateProductsIndexAsync()).Wait();
         }
 
-        public async Task<List<Product>> SearchProductsAsync(string query)
+        public async Task<List<ProductDocument>> SearchProductsAsync(string query)
         {
             return await SearchProductsAsync(new SearchProductsQuery { Query = query });
         }
 
-        public async Task<List<Product>> SearchProductsAsync(SearchProductsQuery query)
+        public async Task<List<ProductDocument>> SearchProductsAsync(SearchProductsQuery query)
         {
             // Create a SearchRequest object instead of descriptor
             var searchRequest = new SearchRequest<ProductDocument>("products")
@@ -52,7 +52,7 @@ namespace Ecommerce.Infrastructure.Services
                 {
             new MultiMatchQuery()
             {
-                Fields = new[] { "name", "description" },
+                Fields = new[] { "name", "description","categoryName","brandName" },
                 Query = query.Query,
                 Fuzziness = new Fuzziness("AUTO")
             }
@@ -134,20 +134,12 @@ namespace Ecommerce.Infrastructure.Services
 
             var response = await _elasticClient.SearchAsync<ProductDocument>(searchRequest);
 
-            return response.IsValidResponse ? response.Documents.Select(d => new Product
-            {
-                Id = d.Id,
-                Name = d.Name,
-                Description = d.Description,
-                Price = d.Price,
-                CategoryId = d.CategoryId,
-                CreatedDate = d.CreatedDate
-            }).ToList() : new List<Product>();
+            return response.IsValidResponse ? response.Documents.ToList() : new List<ProductDocument>();
         }
         public async Task<List<string>> SuggestionSearchAsync(string query)
         {
-            var suggestResponse = await GetCompletionSuggestionsAsync("products", "nameSuggest",query,10);
-            return suggestResponse.SelectMany(o => o.Options).Select(o=>o.Text).ToList();
+            var suggestResponse = await GetCompletionSuggestionsAsync("products", "nameSuggest", query, 10);
+            return suggestResponse.SelectMany(o => o.Options).Select(o => o.Text).ToList();
         }
 
 
@@ -155,7 +147,7 @@ namespace Ecommerce.Infrastructure.Services
         {
             // Ensure the index exists before indexing
             await EnsureIndexExistsAsync();
-            
+
             // Index the product
             await _elasticClient.IndexAsync(product, i => i.Index("products"));
         }
@@ -229,8 +221,8 @@ namespace Ecommerce.Infrastructure.Services
             var response = await _elasticClient.SearchAsync<ProductDocument>(s => s
             .Index(indexName)
             .Size(0)
-            .Suggest(sg=>sg
-            .Suggesters(st=>st.Add("completion-suggestions",fc=>fc.Completion(new CompletionSuggester
+            .Suggest(sg => sg
+            .Suggesters(st => st.Add("completion-suggestions", fc => fc.Completion(new CompletionSuggester
             {
                 Field = fieldName,
                 Size = size,
