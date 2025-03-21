@@ -12,12 +12,14 @@ namespace Ecommerce.Application.Features.Commands.Product.AddNew
     {
         private readonly IProductRepository _productRepository;
         private readonly ICategoryRepository _categoryRepository;
+        private readonly IBrandRepository _brandRepository;
         private readonly IProductSearchService _productSearchService;
 
-        public AddProductCommandHandler(IProductRepository productRepository, ICategoryRepository categoryRepository, IProductSearchService productSearchService)
+        public AddProductCommandHandler(IProductRepository productRepository, ICategoryRepository categoryRepository,IBrandRepository brandRepository, IProductSearchService productSearchService)
         {
             _productRepository = productRepository;
             _categoryRepository = categoryRepository;
+            _brandRepository = brandRepository;
             _productSearchService = productSearchService;
         }
 
@@ -33,6 +35,8 @@ namespace Ecommerce.Application.Features.Commands.Product.AddNew
                 CreatedDate = DateTime.UtcNow
             };
             var categoryPath = await _categoryRepository.GetCategoryPathAsync(product.CategoryId);
+            var brand = await _brandRepository.GetBrandByIdAsync(command.BrandId);
+            var category =await _categoryRepository.GetCategoryByIdAsync(command.CategoryId);
             var document = new ProductDocument
             {
                 Id = product.Id,
@@ -41,11 +45,15 @@ namespace Ecommerce.Application.Features.Commands.Product.AddNew
                 Description = product.Description,
                 Price = product.Price,
                 CategoryId = product.CategoryId,
+                CategoryName= category.Name,
                 CategoryPath = categoryPath,
                 BrandId = product.BrandId,
-                BrandName = product.Brand?.Name,
+                BrandName = brand.Name,
                 CreatedDate = product.CreatedDate,
-                NameSuggest = new CompletionField() {input = new string[] { product.Name, product.Name + " " + (product.Brand?.Name ?? ""), product.Name + " " + (product.Brand?.Name ?? "") + " " + (product.Category?.Name ?? "") } }
+                NameSuggest = new CompletionField
+                {
+                    input = new string[] { product.Name,brand.Name,brand.Name+" "+product.Name }
+                }
             };
             await _productRepository.AddProductAsync(product);
             await _productSearchService.IndexProductAsync(document);

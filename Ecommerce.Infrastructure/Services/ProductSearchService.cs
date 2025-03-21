@@ -7,6 +7,7 @@ using Elastic.Clients.Elasticsearch.Core.Search;
 using Elastic.Clients.Elasticsearch.Mapping;
 using Elastic.Clients.Elasticsearch.Nodes;
 using Elastic.Clients.Elasticsearch.QueryDsl;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
@@ -20,26 +21,37 @@ namespace Ecommerce.Infrastructure.Services
     {
         private readonly ElasticsearchClient _elasticClient;
         private readonly ISearchConfigRepository _searchConfigRepository;
+        private readonly ILogger<ProductSearchService> _logger;
 
-        public ProductSearchService(ElasticsearchClient elasticClient, ISearchConfigRepository searchConfigRepository)
+        public ProductSearchService(ElasticsearchClient elasticClient, ISearchConfigRepository searchConfigRepository, ILogger<ProductSearchService> logger)
         {
             _elasticClient = elasticClient;
             _searchConfigRepository = searchConfigRepository;
+            _logger = logger;
             //Task.Run(async () => await CreateProductsIndexAsync()).Wait();
         }
 
         public async Task<List<ProductDocument>> SearchProductsAsync(string query)
         {
-            return await SearchProductsAsync(new SearchProductsQuery { Query = query });
+            var result = await SearchProductsAsync(new SearchProductsQuery { Query = query });
+            return result.Products;
         }
 
-        public async Task<List<ProductDocument>> SearchProductsAsync(SearchProductsQuery query)
+        public async Task<(List<ProductDocument> Products, long TotalCount)> SearchProductsAsync(SearchProductsQuery query)
         {
+            // Validate input
+            query.Page = Math.Max(1, query.Page);
+            query.PageSize = Math.Clamp(query.PageSize, 1, 100);
             // Create a SearchRequest object instead of descriptor
             var searchRequest = new SearchRequest<ProductDocument>("products")
             {
                 From = (query.Page - 1) * query.PageSize,
-                Size = query.PageSize
+                Size = query.PageSize,
+                Source = new SourceConfig(new SourceFilter
+                {
+                    Includes = new[] { "id", "name", "description", "price", "categoryName", "brandName", "createdDate" }
+                }),
+                TrackTotalHits = new TrackHits(true)
             };
 
             // Build the query
@@ -48,14 +60,43 @@ namespace Ecommerce.Infrastructure.Services
             // Add must clause for text search
             if (!string.IsNullOrEmpty(query.Query))
             {
-                boolQuery.Must = new Query[]
+                if (query.Query.Length < 3)
                 {
-            new MultiMatchQuery()
-            {
-                Fields = new[] { "name", "description","categoryName","brandName" },
-                Query = query.Query,
-                Fuzziness = new Fuzziness("AUTO")
-            }
+                    // For short queries, prioritize exact matches
+                    boolQuery.Must = new Query[]
+                    {
+                        new MultiMatchQuery()
+                        {
+                            Fields = new[] { "name^3", "description", "categoryName", "brandName" },
+                            Query = query.Query,
+                            Operator = Operator.And
+                        }
+                    };
+                }
+                else
+                {
+                    boolQuery.Must = new Query[]
+                    {
+                        new MultiMatchQuery()
+                        {
+                            Fields = new[] { "name", "description", "categoryName", "brandName" },
+                            Query = query.Query,
+                            Fuzziness = new Fuzziness("AUTO")
+                        }
+                    };
+                }
+                searchRequest.Highlight = new Highlight
+                {
+                    PreTags = new[] { "<em>" },
+                    PostTags = new[] { "</em>" },
+                    Fields = new Dictionary<Field, HighlightField>
+                    {
+                        { Infer.Field<ProductDocument>(p => p.Name), new HighlightField() },
+                        { Infer.Field<ProductDocument>(p => p.Description), new HighlightField {
+                            FragmentSize = 150,
+                            NumberOfFragments = 1
+                        }}
+                    }
                 };
             }
 
@@ -65,7 +106,7 @@ namespace Ecommerce.Infrastructure.Services
             // Price range filter
             if (query.MinPrice.HasValue || query.MaxPrice.HasValue)
             {
-                var rangeQuery = new NumberRangeQuery("price");
+                var rangeQuery = new NumberRangeQuery(Infer.Field<ProductDocument>(p => p.Price));
                 if (query.MinPrice.HasValue)
                     rangeQuery.Gte = Convert.ToDouble(query.MinPrice);
 
@@ -78,21 +119,23 @@ namespace Ecommerce.Infrastructure.Services
             // Category filter
             if (query.CategoryId.HasValue)
             {
-                filterQueries.Add(new TermQuery("categoryId")
+                filterQueries.Add(new TermQuery(Infer.Field<ProductDocument>(p => p.CategoryId))
                 {
                     Value = query.CategoryId.Value
                 });
             }
             else if (query.ParentCategoryId.HasValue)
             {
-                filterQueries.Add(new TermQuery("categoryPath")
+                filterQueries.Add(new TermQuery(Infer.Field<ProductDocument>(p => p.CategoryPath))
                 {
                     Value = query.ParentCategoryId.Value
                 });
             }
+
+            // Brand filter
             if (query.BrandId.HasValue)
             {
-                filterQueries.Add(new TermQuery("brandId")
+                filterQueries.Add(new TermQuery(Infer.Field<ProductDocument>(p => p.BrandId))
                 {
                     Value = query.BrandId.Value
                 });
@@ -118,23 +161,51 @@ namespace Ecommerce.Infrastructure.Services
                 switch (query.SortBy.ToLower())
                 {
                     case "price-asc":
-                        searchRequest.Sort.Add(SortOptions.Field("price", new FieldSort { Order = SortOrder.Asc }));
+                        searchRequest.Sort.Add(SortOptions.Field(
+                            Infer.Field<ProductDocument>(p => p.Price),
+                            new FieldSort { Order = SortOrder.Asc }));
                         break;
                     case "price-desc":
-                        searchRequest.Sort.Add(SortOptions.Field("price", new FieldSort { Order = SortOrder.Desc }));
+                        searchRequest.Sort.Add(SortOptions.Field(
+                            Infer.Field<ProductDocument>(p => p.Price),
+                            new FieldSort { Order = SortOrder.Desc }));
                         break;
                     case "name-asc":
-                        searchRequest.Sort.Add(SortOptions.Field("keyword", new FieldSort { Order = SortOrder.Asc }));
+                        searchRequest.Sort.Add(SortOptions.Field(
+                            Infer.Field<ProductDocument>(p => p.Keyword),
+                            new FieldSort { Order = SortOrder.Asc }));
                         break;
                     case "name-desc":
-                        searchRequest.Sort.Add(SortOptions.Field("keyword", new FieldSort { Order = SortOrder.Desc }));
+                        searchRequest.Sort.Add(SortOptions.Field(
+                            Infer.Field<ProductDocument>(p => p.Keyword),
+                            new FieldSort { Order = SortOrder.Desc }));
+                        break;
+                    case "newest":
+                        searchRequest.Sort.Add(SortOptions.Field(
+                            Infer.Field<ProductDocument>(p => p.CreatedDate),
+                            new FieldSort { Order = SortOrder.Desc }));
                         break;
                 }
+                searchRequest.Sort.Add(SortOptions.Field(Infer.Field<ProductDocument>(p => p.Id),new FieldSort { Order = SortOrder.Asc }));
             }
 
-            var response = await _elasticClient.SearchAsync<ProductDocument>(searchRequest);
+            try
+            {
+                var response = await _elasticClient.SearchAsync<ProductDocument>(searchRequest);
 
-            return response.IsValidResponse ? response.Documents.ToList() : new List<ProductDocument>();
+                if (!response.IsValidResponse)
+                {
+                    _logger.LogError("Elasticsearch search error: {ErrorDetails}", response.DebugInformation);
+                    return (new List<ProductDocument>(), 0);
+                }
+
+                return (response.Documents.ToList(), response.Total);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Exception during Elasticsearch search");
+                return (new List<ProductDocument>(), 0);
+            }
         }
         public async Task<List<string>> SuggestionSearchAsync(string query)
         {

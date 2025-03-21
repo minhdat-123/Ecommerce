@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Ecommerce.Application.Features.Queries.Product.Search
 {
-    public class SearchProductsQueryHandler : IQueryHandler<SearchProductsQuery, List<Domain.ElasticSearch.Documents.ProductDocument>>
+    public class SearchProductsQueryHandler : IQueryHandler<SearchProductsQuery, SearchProductsResponse>
     {
         private readonly IProductSearchService _productSearchService;
 
@@ -16,9 +16,10 @@ namespace Ecommerce.Application.Features.Queries.Product.Search
             _productSearchService = productSearchService;
         }
 
-        public async Task<List<Domain.ElasticSearch.Documents.ProductDocument>> HandleAsync(SearchProductsQuery query)
+        public async Task<SearchProductsResponse> HandleAsync(SearchProductsQuery query)
         {
-            return await _productSearchService.SearchProductsAsync(query);
+            var (products, totalCount) = await _productSearchService.SearchProductsAsync(query);
+            return new SearchProductsResponse(products, totalCount);
         }
     }
 
