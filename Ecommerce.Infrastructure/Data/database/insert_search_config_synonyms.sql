@@ -4,7 +4,7 @@
 INSERT INTO SearchConfigs (Name, Type, Value, IsActive, CreatedDate)
 VALUES ('Technology Synonyms', 1, 'smartphone, mobile phone
 computer, pc
-laptop, notebook
+laptop, ultrabook
 tablet, pad
 headphones, earphones
 wireless, cordless

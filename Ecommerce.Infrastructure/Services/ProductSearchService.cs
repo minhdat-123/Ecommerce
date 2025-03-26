@@ -60,31 +60,16 @@ namespace Ecommerce.Infrastructure.Services
             // Add must clause for text search
             if (!string.IsNullOrEmpty(query.Query))
             {
-                if (query.Query.Length < 3)
-                {
-                    // For short queries, prioritize exact matches
-                    boolQuery.Must = new Query[]
-                    {
-                        new MultiMatchQuery()
-                        {
-                            Fields = new[] { "name^3", "description", "categoryName", "brandName" },
-                            Query = query.Query,
-                            Operator = Operator.And
-                        }
-                    };
-                }
-                else
-                {
-                    boolQuery.Must = new Query[]
-                    {
+                boolQuery.Must = new Query[]
+{
                         new MultiMatchQuery()
                         {
                             Fields = new[] { "name", "description", "categoryName", "brandName" },
                             Query = query.Query,
+                            //MinimumShouldMatch=MinimumShouldMatch.Percentage(100),
                             Fuzziness = new Fuzziness("AUTO")
                         }
-                    };
-                }
+};
                 searchRequest.Highlight = new Highlight
                 {
                     PreTags = new[] { "<em>" },
@@ -183,10 +168,10 @@ namespace Ecommerce.Infrastructure.Services
                     case "newest":
                         searchRequest.Sort.Add(SortOptions.Field(
                             Infer.Field<ProductDocument>(p => p.CreatedDate),
-                            new FieldSort { Order = SortOrder.Desc }));
+                            new FieldSort { Order = SortOrder.Asc }));
                         break;
                 }
-                searchRequest.Sort.Add(SortOptions.Field(Infer.Field<ProductDocument>(p => p.Id),new FieldSort { Order = SortOrder.Asc }));
+                searchRequest.Sort.Add(SortOptions.Field(Infer.Field<ProductDocument>(p => p.Id), new FieldSort { Order = SortOrder.Asc }));
             }
 
             try
@@ -260,7 +245,7 @@ namespace Ecommerce.Infrastructure.Services
                                 .Stemmer("product_stemmer", st => st
                                     .Language(activeStemmer)
                                 )
-                                .Synonym("product_synonyms", sy => sy
+                                .SynonymGraph("product_synonyms", sy => sy
                                     .Synonyms(synonymsList.ToArray())
                                 )
                             )

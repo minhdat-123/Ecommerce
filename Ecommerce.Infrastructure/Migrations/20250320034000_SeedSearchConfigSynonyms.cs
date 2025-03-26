@@ -14,9 +14,10 @@ namespace Ecommerce.Infrastructure.Migrations
 -- Format: Each Value contains one synonym mapping per line
 
 INSERT INTO SearchConfigs (Name, Type, Value, IsActive, CreatedDate)
-VALUES ('Technology Synonyms', 1, 'smartphone, mobile phone
+VALUES ('Technology Synonyms', 1, 'smartphone , phone, mobile phone
 computer, pc
-laptop, notebook
+laptop, ultrabook
+iphone 15, apple phone 15
 tablet, pad
 headphones, earphones
 wireless, cordless
