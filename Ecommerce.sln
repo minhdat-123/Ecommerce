@@ -10,6 +10,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ecommerce.Infrastructure", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ecommerce.Application", "Ecommerce.Application\Ecommerce.Application.csproj", "{681F5476-BB2A-4A0C-8196-C0EF6CE75540}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ecommerce.Blazor", "Ecommerce.Blazor\Ecommerce.Blazor.csproj", "{B5A2E74C-D83F-4A4B-9B6A-395D3F74D7C9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -32,6 +34,10 @@ Global
 		{681F5476-BB2A-4A0C-8196-C0EF6CE75540}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{681F5476-BB2A-4A0C-8196-C0EF6CE75540}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{681F5476-BB2A-4A0C-8196-C0EF6CE75540}.Release|Any CPU.Build.0 = Release|Any CPU
+				{B5A2E74C-D83F-4A4B-9B6A-395D3F74D7C9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B5A2E74C-D83F-4A4B-9B6A-395D3F74D7C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B5A2E74C-D83F-4A4B-9B6A-395D3F74D7C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B5A2E74C-D83F-4A4B-9B6A-395D3F74D7C9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

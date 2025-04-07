@@ -1,0 +1,17 @@
+@using Microsoft.AspNetCore.Components.Web
+@inherits LayoutComponentBase
+
+<div class="app-container">
+    <h1>E-commerce Site</h1>
+    <nav>
+        <ul>
+            <li><NavLink href="" Match="NavLinkMatch.All">Products</NavLink></li>
+            <!-- Order History link commented out for future use -->
+            <!-- <li><NavLink href="orders">Order History</NavLink></li> -->
+        </ul>
+    </nav>
+
+    <main>
+        @Body
+    </main>
+</div>

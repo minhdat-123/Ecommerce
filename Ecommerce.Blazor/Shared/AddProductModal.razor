@@ -1,0 +1,269 @@
+@using Ecommerce.Blazor.Models
+@using Ecommerce.Blazor.Services
+@using Microsoft.AspNetCore.Components.Forms
+@inject IProductService ProductService
+@inject ICategoryService CategoryService
+@inject IBrandService BrandService
+
+<div class="modal-backdrop"></div>
+<div class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Add New Product</h2>
+            <button class="close-button" @onclick="Close">×</button>
+        </div>
+        <div class="modal-body">
+            <EditForm Model="@product" OnValidSubmit="HandleValidSubmit">
+                <DataAnnotationsValidator />
+
+                <div class="form-group">
+                    <label for="name">Product Name *</label>
+                    <InputText id="name" @bind-Value="product.Name" class="form-control" />
+                    <ValidationMessage For="@(() => product.Name)" />
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <InputTextArea id="description" @bind-Value="product.Description" class="form-control" rows="3" />
+                </div>
+
+                <div class="form-group">
+                    <label for="price">Price *</label>
+                    <InputNumber id="price" @bind-Value="product.Price" class="form-control" min="0.01" step="0.01" />
+                    <ValidationMessage For="@(() => product.Price)" />
+                </div>
+
+                <div class="form-group">
+                    <label for="topLevelCategory">Top Level Category *</label>
+                    <InputSelect id="topLevelCategory" @bind-Value="selectedTopLevelCategoryIdString" class="form-control" @oninput="OnTopLevelCategoryChange">
+                        <option value="">Select a Category</option>
+                        @foreach (var category in topLevelCategories)
+                        {
+                            <option value="@category.Id">@category.Name</option>
+                        }
+                    </InputSelect>
+                     <ValidationMessage For="@(() => product.CategoryId)" /> 
+                </div>
+
+                @if (selectedTopLevelCategoryId.HasValue)
+                {
+                    <div class="form-group">
+                        <label for="subcategory">Subcategory *</label>
+                        <InputSelect id="subcategory" @bind-Value="selectedSubcategoryIdString" class="form-control" @oninput="OnSubcategoryChange">
+                            <option value="">Select a Subcategory</option>
+                            @foreach (var subcategory in subcategories)
+                            {
+                                <option value="@subcategory.Id">@subcategory.Name</option>
+                            }
+                        </InputSelect>
+                    </div>
+                }
+
+                @if (selectedSubcategoryId.HasValue && brands.Any())
+                {
+                    <div class="form-group">
+                        <label for="brand">Brand *</label>
+                        <InputSelect id="brand" @bind-Value="product.BrandId" class="form-control">
+                            <option value="0">Select a Brand</option>
+                            @foreach (var brand in brands)
+                            {
+                                <option value="@brand.Id">@brand.Name</option>
+                            }
+                        </InputSelect>
+                         <ValidationMessage For="@(() => product.BrandId)" />
+                    </div>
+                }
+
+                @if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    <div class="alert alert-danger" role="alert">
+                        @errorMessage
+                    </div>
+                }
+
+                <div class="button-group">
+                    <button type="button" class="cancel-button" @onclick="Close">Cancel</button>
+                    <button type="submit" class="submit-button" disabled="@isLoading">
+                        @if (isLoading)
+                        {
+                            <span>Adding...</span>
+                        }
+                        else
+                        {
+                            <span>Add Product</span>
+                        }
+                    </button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public EventCallback<bool> OnProductAdded { get; set; }
+
+    private Product product = new Product() { Price = 0.01m }; // Initialize price
+    private List<Category> topLevelCategories = new List<Category>();
+    private List<Category> subcategories = new List<Category>();
+    private List<Brand> brands = new List<Brand>();
+    
+    private int? selectedTopLevelCategoryId;
+    private int? selectedSubcategoryId;
+
+    private bool isLoading = false;
+    private string errorMessage = string.Empty;
+
+    // Need string properties for InputSelect binding with nullable int conversion
+    private string selectedTopLevelCategoryIdString
+    {
+        get => selectedTopLevelCategoryId?.ToString() ?? "";
+        set => selectedTopLevelCategoryId = int.TryParse(value, out var id) ? id : null;
+    }
+
+    private string selectedSubcategoryIdString
+    {
+        get => selectedSubcategoryId?.ToString() ?? "";
+        set
+        {
+            if (int.TryParse(value, out var id))
+            {
+                selectedSubcategoryId = id;
+                product.CategoryId = id; // Set the product's category ID here
+            }
+            else
+            {
+                selectedSubcategoryId = null;
+                product.CategoryId = 0; // Reset if no subcategory selected
+            }
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadTopLevelCategories();
+    }
+
+    private async Task LoadTopLevelCategories()
+    {
+        isLoading = true;
+        errorMessage = string.Empty;
+        try
+        {
+            topLevelCategories = await CategoryService.GetTopLevelCategoriesAsync() ?? new List<Category>();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to load categories: {ex.Message}";
+            Console.WriteLine(errorMessage);
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task OnTopLevelCategoryChange(ChangeEventArgs e)
+    {
+        selectedSubcategoryId = null;
+        selectedSubcategoryIdString = ""; // Reset bound value
+        product.CategoryId = 0;
+        product.BrandId = 0;
+        subcategories.Clear();
+        brands.Clear();
+        StateHasChanged(); // Update UI immediately
+
+        if (selectedTopLevelCategoryId.HasValue)
+        {
+            isLoading = true;
+            errorMessage = string.Empty;
+            try
+            {
+                subcategories = await CategoryService.GetSubcategoriesAsync(selectedTopLevelCategoryId.Value) ?? new List<Category>();
+            }
+            catch (Exception ex)
+            {
+                 errorMessage = $"Failed to load subcategories: {ex.Message}";
+                 Console.WriteLine(errorMessage);
+            }
+            finally
+            {
+                 isLoading = false;
+                 StateHasChanged();
+            }
+        }
+    }
+
+    private async Task OnSubcategoryChange(ChangeEventArgs e)
+    {
+        product.BrandId = 0;
+        brands.Clear();
+        StateHasChanged(); // Update UI immediately
+
+        if (selectedSubcategoryId.HasValue)
+        {
+            product.CategoryId = selectedSubcategoryId.Value; // Ensure CategoryId is set
+            isLoading = true;
+            errorMessage = string.Empty;
+            try
+            {
+                brands = await BrandService.GetBrandsByCategoryAsync(selectedSubcategoryId.Value) ?? new List<Brand>();
+            }
+            catch (Exception ex)
+            {
+                errorMessage = $"Failed to load brands: {ex.Message}";
+                Console.WriteLine(errorMessage);
+            }
+            finally
+            {
+                isLoading = false;
+                StateHasChanged();
+            }
+        } else {
+             product.CategoryId = 0; // Reset if no subcategory selected
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        isLoading = true;
+        errorMessage = string.Empty;
+
+        // Manual validation for CategoryId and BrandId as they might be 0
+        if (product.CategoryId <= 0)
+        {
+            errorMessage = "Please select a subcategory.";
+            isLoading = false;
+            StateHasChanged();
+            return;
+        }
+        if (product.BrandId <= 0)
+        {
+            errorMessage = "Please select a brand.";
+            isLoading = false;
+            StateHasChanged();
+            return;
+        }
+
+
+        try
+        {
+            await ProductService.AddProductAsync(product);
+            await OnProductAdded.InvokeAsync(true);
+            Close(); // Close modal on success
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error adding product: {ex.Message}";
+             Console.WriteLine(errorMessage);
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private void Close()
+    {
+        OnClose.InvokeAsync();
+    }
+} 

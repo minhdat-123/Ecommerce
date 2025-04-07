@@ -1,0 +1,99 @@
+@page "/product/{ProductId:int}"
+@using Ecommerce.Blazor.Models
+@using Ecommerce.Blazor.Services
+@inject IProductService ProductService
+@inject NavigationManager NavigationManager
+
+<div class="product-details-container">
+    @if (isLoading)
+    {
+        <div class="loading">Loading product details...</div>
+    }
+    else if (product == null)
+    {
+        <div class="error-message">
+            <h3>Product not found</h3>
+            <p>The requested product could not be found.</p>
+            <button @onclick="GoBack">Back to Products</button>
+        </div>
+    }
+    else
+    {
+        <div class="product-details">
+            <div class="product-header">
+                <h2>@product.Name</h2>
+                <div class="product-meta">
+                    <span class="product-category">Category: @product.CategoryName</span>
+                    <span class="product-brand">Brand: @product.BrandName</span>
+                </div>
+            </div>
+            
+            <div class="product-price-section">
+                <div class="product-price">$@product.Price.ToString("F2")</div>
+                <button class="add-to-cart-btn" @onclick="AddToCart">Add to Cart</button>
+            </div>
+            
+            <div class="product-description">
+                <h3>Description</h3>
+                <p>@product.Description</p>
+            </div>
+            
+            <div class="back-button">
+                <button @onclick="GoBack">Back to Products</button>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public int ProductId { get; set; }
+    
+    private Product? product;
+    private bool isLoading = true;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadProductAsync();
+    }
+    
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadProductAsync();
+    }
+    
+    private async Task LoadProductAsync()
+    {
+        isLoading = true;
+        
+        try
+        {
+            // Get all products and find the one with matching ID
+            // In a real application, you would have a GetProductByIdAsync method
+            var products = await ProductService.GetProductsAsync();
+            product = products.FirstOrDefault(p => p.Id == ProductId);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading product: {ex.Message}");
+            product = null;
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+    
+    private void GoBack()
+    {
+        NavigationManager.NavigateTo("/");
+    }
+    
+    private void AddToCart()
+    {
+        // This would be implemented when adding shopping cart functionality
+        // For now, just show a message in the console
+        Console.WriteLine($"Added product {product?.Name} to cart");
+    }
+}

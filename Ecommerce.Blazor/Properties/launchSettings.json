@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "Ecommerce.Blazor": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:7235;http://localhost:5235"
+    }
+  }
+}
