@@ -8,6 +8,7 @@ using Ecommerce.Application.Interfaces;
 using Ecommerce.Domain.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Ecommerce.Api.Controllers
 {
@@ -40,6 +41,7 @@ namespace Ecommerce.Api.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> AddProduct([FromBody] AddProductCommand command)
         {
             await _addProductHandler.HandleAsync(command);

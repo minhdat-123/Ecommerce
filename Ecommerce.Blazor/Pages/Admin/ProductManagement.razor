@@ -1,10 +1,14 @@
 @page "/admin/products"
 @using Ecommerce.Blazor.Models
 @using Ecommerce.Blazor.Services
+@using Microsoft.AspNetCore.Authorization
+
 @inject IProductService ProductService
 @inject ICategoryService CategoryService
 @inject IBrandService BrandService
 @inject NavigationManager NavigationManager
+
+@attribute [Authorize(Roles = "Admin")]
 
 <h2>Product Management</h2>
 

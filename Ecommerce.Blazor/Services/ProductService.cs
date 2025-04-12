@@ -1,4 +1,5 @@
 using Ecommerce.Blazor.Models;
+using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
@@ -7,19 +8,23 @@ namespace Ecommerce.Blazor.Services
 {
     public class ProductService : IProductService
     {
-        private readonly HttpClient _httpClient;
+        private readonly IHttpClientFactory _httpClientFactory;
         private readonly ApiSettings _apiSettings;
         private readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+        private const string ApiClientName = "AuthenticatedApiClient";
 
-        public ProductService(HttpClient httpClient, ApiSettings apiSettings)
+        public ProductService(IHttpClientFactory httpClientFactory, ApiSettings apiSettings)
         {
-            _httpClient = httpClient;
+            _httpClientFactory = httpClientFactory;
             _apiSettings = apiSettings;
         }
 
+        private HttpClient CreateClient() => _httpClientFactory.CreateClient(ApiClientName);
+
         public async Task<List<Product>> GetProductsAsync()
         {
-            var response = await _httpClient.GetAsync($"{_apiSettings.ApiUrl}/products");
+            var client = CreateClient();
+            var response = await client.GetAsync($"{_apiSettings.ApiUrl}/products");
             response.EnsureSuccessStatusCode();
             return await response.Content.ReadFromJsonAsync<List<Product>>(_jsonOptions) ?? new List<Product>();
         }
@@ -28,6 +33,7 @@ namespace Ecommerce.Blazor.Services
             int? categoryId = null, int? parentCategoryId = null, int? brandId = null,
             string sortBy = "", int page = 1, int pageSize = 10)
         {
+            var client = CreateClient();
             var requestUri = $"{_apiSettings.ApiUrl}/products/search?";
             var queryParams = new List<string>();
 
@@ -51,24 +57,26 @@ namespace Ecommerce.Blazor.Services
 
             requestUri += string.Join("&", queryParams);
 
-            var response = await _httpClient.GetAsync(requestUri);
+            var response = await client.GetAsync(requestUri);
             response.EnsureSuccessStatusCode();
             return await response.Content.ReadFromJsonAsync<SearchProductsResponse>(_jsonOptions) ?? new SearchProductsResponse();
         }
 
         public async Task<List<string>> GetSuggestionsAsync(string query)
         {
+            var client = CreateClient();
             if (string.IsNullOrEmpty(query))
                 return new List<string>();
 
             var requestUri = $"{_apiSettings.ApiUrl}/products/suggestions?query={Uri.EscapeDataString(query)}";
-            var response = await _httpClient.GetAsync(requestUri);
+            var response = await client.GetAsync(requestUri);
             response.EnsureSuccessStatusCode();
             return await response.Content.ReadFromJsonAsync<List<string>>(_jsonOptions) ?? new List<string>();
         }
 
         public async Task AddProductAsync(Product product)
         {
+            var client = CreateClient();
             var content = new StringContent(
                 JsonSerializer.Serialize(new
                 {
@@ -81,13 +89,14 @@ namespace Ecommerce.Blazor.Services
                 Encoding.UTF8,
                 "application/json");
 
-            var response = await _httpClient.PostAsync($"{_apiSettings.ApiUrl}/products", content);
+            var response = await client.PostAsync($"{_apiSettings.ApiUrl}/products", content);
             response.EnsureSuccessStatusCode();
         }
 
         public async Task IndexProductsAsync()
         {
-            var response = await _httpClient.PostAsync($"{_apiSettings.ApiUrl}/products/index", null);
+            var client = CreateClient();
+            var response = await client.PostAsync($"{_apiSettings.ApiUrl}/products/index", null);
             response.EnsureSuccessStatusCode();
         }
     }

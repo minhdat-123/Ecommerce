@@ -1,5 +1,10 @@
 @using Microsoft.AspNetCore.Components.Web
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+
 @inherits LayoutComponentBase
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
 
 <div class="app-container">
     <h1>E-commerce Site</h1>
@@ -8,6 +13,22 @@
             <li><NavLink href="" Match="NavLinkMatch.All">Products</NavLink></li>
             <!-- Order History link commented out for future use -->
             <!-- <li><NavLink href="orders">Order History</NavLink></li> -->
+
+            <!-- Authentication Links -->
+            <AuthorizeView>
+                <Authorized>
+                     <li class="user-info">Welcome, @context.User.FindFirstValue(ClaimTypes.Email)</li>
+                    <li><button class="nav-link-button" @onclick="Logout">Logout</button></li>
+                     @* Add Admin links if needed - Use explicit context name for inner AuthorizeView *@
+                     <AuthorizeView Roles="Admin" Context="adminContext"> 
+                         <li><NavLink href="/admin/products">Product Management</NavLink></li>
+                     </AuthorizeView>
+                </Authorized>
+                <NotAuthorized>
+                    <li><button class="nav-link-button" @onclick="OpenLoginModal">Login</button></li>
+                    <li><button class="nav-link-button" @onclick="OpenRegisterModal">Register</button></li>
+                </NotAuthorized>
+            </AuthorizeView>
         </ul>
     </nav>
 
@@ -15,3 +36,46 @@
         @Body
     </main>
 </div>
+
+<!-- Modals -->
+@if (showLoginModal)
+{
+    <LoginModal OnClose="CloseModals" OnSwitchToRegister="SwitchToRegister" />
+}
+@if (showRegisterModal)
+{
+    <RegisterModal OnClose="CloseModals" OnSwitchToLogin="SwitchToLogin" />
+}
+
+@code {
+    private bool showLoginModal = false;
+    private bool showRegisterModal = false;
+
+    private void OpenLoginModal() => showLoginModal = true;
+    private void OpenRegisterModal() => showRegisterModal = true;
+    private void CloseModals() 
+    {
+        showLoginModal = false;
+        showRegisterModal = false;
+        StateHasChanged(); // Ensure UI updates if modals are closed externally
+    }
+
+    private void SwitchToRegister()
+    {
+        showLoginModal = false;
+        showRegisterModal = true;
+    }
+
+    private void SwitchToLogin()
+    {
+        showRegisterModal = false;
+        showLoginModal = true;
+    }
+
+    private async Task Logout()
+    {
+        var customAuthStateProvider = (ApiAuthenticationStateProvider)AuthenticationStateProvider;
+        await customAuthStateProvider.MarkUserAsLoggedOut();
+        NavigationManager.NavigateTo("/"); // Navigate to home after logout
+    }
+}

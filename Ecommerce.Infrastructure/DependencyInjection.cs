@@ -25,6 +25,8 @@ namespace Ecommerce.Infrastructure
             services.AddScoped<ICategoryRepository, CategoryRepository>();
             services.AddScoped<IBrandRepository, BrandRepository>();
             services.AddScoped<ISearchConfigRepository, SearchConfigRepository>();
+            services.AddScoped<IJwtGenerator, JwtGenerator>();
+            services.AddScoped<IAuthService, AuthService>();
             return services;
         }
     }
