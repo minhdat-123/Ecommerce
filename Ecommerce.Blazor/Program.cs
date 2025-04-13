@@ -4,54 +4,61 @@ using Ecommerce.Blazor.Services;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
-// Register the DelegatingHandler
-builder.Services.AddTransient<AuthHeaderHandler>();
+// --- Configure HttpClient to point to the API Gateway --- 
+// Base address for API calls via the gateway
+string gatewayApiUrl = "https://localhost:7200/api"; // Use the Gateway HTTPS URL
 
-// Configure a named HttpClient for authenticated API calls
-builder.Services.AddHttpClient("AuthenticatedApiClient", client =>
-{
-    // Base address can be set here if needed, or rely on ApiSettings injection in services
-    // client.BaseAddress = new Uri("https://localhost:7233/api/"); 
-})
-.AddHttpMessageHandler<AuthHeaderHandler>();
+builder.Services.AddHttpClient("API", client => 
+    client.BaseAddress = new Uri(gatewayApiUrl))
+    .AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>(); // OIDC handler
 
-// Configure the default HttpClient (used by ApiAuthenticationStateProvider and potentially others)
-// It won't automatically have the auth header unless ApiAuthenticationStateProvider sets it.
-builder.Services.AddScoped(sp => 
+// Supply HttpClient for components that use it directly
+builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("API"));
+
+// --- Restore ApiSettings pointing to Gateway ---
+builder.Services.AddSingleton(new ApiSettings { ApiUrl = gatewayApiUrl });
+
+// --- Remove old custom auth setup ---
+// builder.Services.AddTransient<AuthHeaderHandler>(); // Removed
+// builder.Services.AddSingleton(new ApiSettings { ApiUrl = "https://localhost:7200/api" }); // Old line removed previously
+// builder.Services.AddScoped<AuthenticationStateProvider, ApiAuthenticationStateProvider>(); // Removed
+
+// --- Add OIDC Authentication --- 
+builder.Services.AddOidcAuthentication(options =>
 {
-    // Optionally configure the default client if needed, otherwise just create it.
-    var client = new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) };
-    return client;
-    // --- OR --- 
-    // Return the named client IF all services will use it and ApiAuthenticationStateProvider
-    // gets the IHttpClientFactory to retrieve the named client.
-    // var factory = sp.GetRequiredService<IHttpClientFactory>();
-    // return factory.CreateClient("AuthenticatedApiClient"); 
+    // Configure your OIDC provider (IdentityService.API)
+    // Ensure this matches the HTTPS URL from IdentityService.API launchSettings.json
+    options.ProviderOptions.Authority = "https://localhost:7273"; 
+    options.ProviderOptions.ClientId = "blazor_wasm"; // Client ID defined in IdentityService Config.cs
+    options.ProviderOptions.ResponseType = "code"; // Use Authorization Code Flow
+
+    // Define scopes needed by the Blazor app
+    options.ProviderOptions.DefaultScopes.Add("openid");
+    options.ProviderOptions.DefaultScopes.Add("profile");
+    options.ProviderOptions.DefaultScopes.Add("email");
+    options.ProviderOptions.DefaultScopes.Add("ecommerce.api"); // Scope to access the API
+    // options.ProviderOptions.DefaultScopes.Add("offline_access"); // If refresh tokens needed
+
+    // Map roles claim correctly (adjust if IdentityService uses a different claim name, but should be standard)
+    options.UserOptions.RoleClaim = "role"; // Default is "role", can also use ClaimTypes.Role
 });
 
-// Register API URL as a service
-builder.Services.AddSingleton(new ApiSettings { ApiUrl = "https://localhost:7233/api" });
-
-// Register Blazored Local Storage
+// Register Blazored Local Storage (can still be useful)
 builder.Services.AddBlazoredLocalStorage();
 
-// Register Authorization Core services
-builder.Services.AddAuthorizationCore();
+// Register Authorization Core services (needed for AuthorizeView etc.)
+builder.Services.AddAuthorizationCore(); 
 
-// Register custom AuthenticationStateProvider
-builder.Services.AddScoped<AuthenticationStateProvider, ApiAuthenticationStateProvider>();
-
-// Register services - IMPORTANT: Inject IHttpClientFactory and use CreateClient("AuthenticatedApiClient")
-// OR change the default registration above to return the named client.
-// For simplicity, let's modify services to use IHttpClientFactory.
+// Register application services (these should now use the IHttpClientFactory injected client)
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IBrandService, BrandService>();
-builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IAuthService, AuthService>(); // This might need adjustment or removal
 
 await builder.Build().RunAsync();

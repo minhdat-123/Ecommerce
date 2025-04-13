@@ -1,9 +1,9 @@
 @using Microsoft.AspNetCore.Components.Web
 @using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
 @using System.Security.Claims
 
 @inherits LayoutComponentBase
-@inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
 
 <div class="app-container">
@@ -18,15 +18,19 @@
             <AuthorizeView>
                 <Authorized>
                      <li class="user-info">Welcome, @context.User.FindFirstValue(ClaimTypes.Email)</li>
-                    <li><button class="nav-link-button" @onclick="Logout">Logout</button></li>
+                     @* Logout Button - Triggers OIDC logout process *@
+                     <li><button class="nav-link-button" @onclick="BeginLogout">Logout</button></li>
+                     
                      @* Add Admin links if needed - Use explicit context name for inner AuthorizeView *@
                      <AuthorizeView Roles="Admin" Context="adminContext"> 
                          <li><NavLink href="/admin/products">Product Management</NavLink></li>
                      </AuthorizeView>
                 </Authorized>
                 <NotAuthorized>
-                    <li><button class="nav-link-button" @onclick="OpenLoginModal">Login</button></li>
-                    <li><button class="nav-link-button" @onclick="OpenRegisterModal">Register</button></li>
+                    @* Login Button - Triggers OIDC login process *@
+                    <li><button class="nav-link-button" @onclick="BeginLogin">Login</button></li>
+                    @* Registration usually happens via the Identity Service UI now *@
+                    @* <li><button class="nav-link-button" @onclick="OpenRegisterModal">Register</button></li> *@
                 </NotAuthorized>
             </AuthorizeView>
         </ul>
@@ -37,45 +41,32 @@
     </main>
 </div>
 
-<!-- Modals -->
-@if (showLoginModal)
+<!-- Remove Modals -->
+@* @if (showLoginModal)
 {
     <LoginModal OnClose="CloseModals" OnSwitchToRegister="SwitchToRegister" />
 }
 @if (showRegisterModal)
 {
     <RegisterModal OnClose="CloseModals" OnSwitchToLogin="SwitchToLogin" />
-}
+} *@
 
 @code {
-    private bool showLoginModal = false;
-    private bool showRegisterModal = false;
+    // Remove modal state variables and related methods
+    // private bool showLoginModal = false;
+    // private bool showRegisterModal = false;
+    // private void OpenLoginModal() => showLoginModal = true;
+    // ... etc ...
 
-    private void OpenLoginModal() => showLoginModal = true;
-    private void OpenRegisterModal() => showRegisterModal = true;
-    private void CloseModals() 
+    // Method to initiate OIDC login
+    private void BeginLogin(MouseEventArgs args)
     {
-        showLoginModal = false;
-        showRegisterModal = false;
-        StateHasChanged(); // Ensure UI updates if modals are closed externally
+        NavigationManager.NavigateToLogin("authentication/login");
     }
 
-    private void SwitchToRegister()
+    // Method to initiate OIDC logout
+    private void BeginLogout(MouseEventArgs args)
     {
-        showLoginModal = false;
-        showRegisterModal = true;
-    }
-
-    private void SwitchToLogin()
-    {
-        showRegisterModal = false;
-        showLoginModal = true;
-    }
-
-    private async Task Logout()
-    {
-        var customAuthStateProvider = (ApiAuthenticationStateProvider)AuthenticationStateProvider;
-        await customAuthStateProvider.MarkUserAsLoggedOut();
-        NavigationManager.NavigateTo("/"); // Navigate to home after logout
+        NavigationManager.NavigateToLogout("authentication/logout");
     }
 }
