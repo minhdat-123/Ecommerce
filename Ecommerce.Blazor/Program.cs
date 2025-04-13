@@ -45,8 +45,17 @@ builder.Services.AddOidcAuthentication(options =>
     options.ProviderOptions.DefaultScopes.Add("ecommerce.api"); // Scope to access the API
     // options.ProviderOptions.DefaultScopes.Add("offline_access"); // If refresh tokens needed
 
-    // Map roles claim correctly (adjust if IdentityService uses a different claim name, but should be standard)
+    // Map claims correctly for user info display
+    options.UserOptions.NameClaim = "name";
     options.UserOptions.RoleClaim = "role"; // Default is "role", can also use ClaimTypes.Role
+});
+
+// Configure authorization policies
+builder.Services.AddAuthorizationCore(options => 
+{
+    // Add an AdminPolicy that requires the Admin role
+    options.AddPolicy("AdminPolicy", policy => 
+        policy.RequireRole("Admin"));
 });
 
 // Register Blazored Local Storage (can still be useful)

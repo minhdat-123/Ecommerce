@@ -57,5 +57,63 @@ namespace IdentityService.API.Areas.Identity.Pages.Account
             [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
             public string ConfirmPassword { get; set; }
         }
+
+        public async Task OnGetAsync(string returnUrl = null)
+        {
+            ReturnUrl = returnUrl;
+            // Get the external authentication schemes
+            ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
+        }
+
+        public async Task<IActionResult> OnPostAsync(string returnUrl = null)
+        {
+            // Get the Blazor App URL from configuration
+            var blazorAppUrl = "https://localhost:7235"; // Default URL for Blazor app
+            
+            // Default to the Blazor app URL if no return URL is provided
+            returnUrl ??= blazorAppUrl;
+            
+            ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
+            
+            if (ModelState.IsValid)
+            {
+                var user = new ApplicationUser 
+                { 
+                    UserName = Input.Email, 
+                    Email = Input.Email,
+                    EmailConfirmed = true  // Auto-confirm email for simplicity
+                };
+                
+                var result = await _userManager.CreateAsync(user, Input.Password);
+                
+                if (result.Succeeded)
+                {
+                    _logger.LogInformation("User created a new account with password.");
+
+                    // Add user to Customer role by default
+                    await _userManager.AddToRoleAsync(user, "Customer");
+                    
+                    // Sign in the user immediately
+                    await _signInManager.SignInAsync(user, isPersistent: false);
+                    
+                    // Always redirect to the Blazor app after successful registration
+                    // If it's not already a URL starting with the Blazor app
+                    if (!returnUrl.StartsWith(blazorAppUrl))
+                    {
+                        returnUrl = blazorAppUrl;
+                    }
+                    
+                    return Redirect(returnUrl);
+                }
+                
+                foreach (var error in result.Errors)
+                {
+                    ModelState.AddModelError(string.Empty, error.Description);
+                }
+            }
+
+            // If we got this far, something failed, redisplay form
+            return Page();
+        }
     }
 }

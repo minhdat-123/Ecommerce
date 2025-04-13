@@ -8,6 +8,8 @@ using Duende.IdentityServer.Models; // Required for ApiScope, Client, etc.
 using System.Security.Claims;
 using Serilog; // Add Serilog
 using IdentityService.API; // Add using for SeedData
+using IdentityService.API.Services; // Add using for CustomProfileService
+using System.Reflection;
 
 // Configure Serilog early
 Log.Logger = new LoggerConfiguration()
@@ -58,7 +60,8 @@ try
         .AddInMemoryApiScopes(Config.GetApiScopes())
         .AddInMemoryClients(Config.GetClients(builder.Configuration)) // Pass config
         // Use ApplicationUser
-        .AddAspNetIdentity<ApplicationUser>(); // Integrate with ASP.NET Core Identity
+        .AddAspNetIdentity<ApplicationUser>() // Integrate with ASP.NET Core Identity
+        .AddProfileService<CustomProfileService>(); // Add our custom profile service
 
     // Add services to the container.
     builder.Services.AddControllersWithViews(); // If you want a UI for login etc.
@@ -91,10 +94,13 @@ try
     app.UseAuthorization(); // IMPORTANT: Authorization comes AFTER UseIdentityServer
 
     // Map endpoints
+    // First map Razor Pages to prioritize Areas/Identity pages
+    app.MapRazorPages(); // Map scaffolded Identity Pages
+    
+    // Then map controller routes as fallback
     app.MapControllerRoute(
         name: "default",
         pattern: "{controller=Home}/{action=Index}/{id?}");
-    app.MapRazorPages(); // Map scaffolded Identity Pages
     
     // Seed data just before running (ensures pipeline is mostly built)
     // Still only in Development environment

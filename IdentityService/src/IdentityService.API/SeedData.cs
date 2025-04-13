@@ -81,26 +81,29 @@ public class SeedData
                 throw new Exception(result.Errors.First().Description);
             }
 
+            // Add role
+            Log.Debug($"Adding user {email} to role {roleName}");
             result = await userMgr.AddToRoleAsync(user, roleName);
-             if (!result.Succeeded)
+            if (!result.Succeeded)
             {
                 throw new Exception(result.Errors.First().Description);
             }
+
             Log.Debug($"User {email} created and assigned to role {roleName}");
         }
         else
         {
-             Log.Debug($"User {email} already exists");
-             // Optionally ensure role assignment even if user exists
-             if (!await userMgr.IsInRoleAsync(user, roleName))
-             {
-                 Log.Debug($"Assigning existing user {email} to role {roleName}");
-                 var roleResult = await userMgr.AddToRoleAsync(user, roleName);
-                 if (!roleResult.Succeeded)
-                 {
-                     throw new Exception(roleResult.Errors.First().Description);
-                 }
-             }
+            Log.Debug($"User {email} already exists");
+            // Ensure role assignment even if user exists
+            if (!await userMgr.IsInRoleAsync(user, roleName))
+            {
+                Log.Debug($"Assigning existing user {email} to role {roleName}");
+                var roleResult = await userMgr.AddToRoleAsync(user, roleName);
+                if (!roleResult.Succeeded)
+                {
+                    throw new Exception(roleResult.Errors.First().Description);
+                }
+            }
         }
     }
 } 
