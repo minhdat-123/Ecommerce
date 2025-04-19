@@ -1,15 +1,16 @@
 using IdentityService.Domain.Entities;
-using IdentityService.Infrastructure.Data;
+using IdentityService.Infrastructure;
+using IdentityService.Application;
+using IdentityService.Application.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Duende.IdentityServer;
-using Duende.IdentityServer.Models; // Required for ApiScope, Client, etc.
-// using Duende.IdentityServer.Test; // Remove if not using test users
+using Duende.IdentityServer.Models;
+using Duende.IdentityServer.Services;
 using System.Security.Claims;
-using Serilog; // Add Serilog
-using IdentityService.API; // Add using for SeedData
-using IdentityService.API.Services; // Add using for CustomProfileService
-using System.Reflection;
+using Serilog;
+using IdentityService.API;
+using IdentityService.API.Areas.Identity.Services;
 
 // Configure Serilog early
 Log.Logger = new LoggerConfiguration()
@@ -29,43 +30,94 @@ try
         .Enrich.FromLogContext()
         .WriteTo.Console());
 
-    // 1. Add DbContext for Identity
-    var connectionString = builder.Configuration.GetConnectionString("IdentityConnection") ?? throw new InvalidOperationException("Connection string 'IdentityConnection' not found.");
-    builder.Services.AddDbContext<IdentityServiceDbContext>(options =>
-        options.UseSqlServer(connectionString));
+    // Add application layer services
+    builder.Services.AddApplication();
 
-    // 2. Add ASP.NET Core Identity (using ApplicationUser)
-    builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
-        {
-            // Example: Configure password settings if needed
-            options.SignIn.RequireConfirmedAccount = false; // Set to true if email confirmation is desired
-        })
-        .AddEntityFrameworkStores<IdentityServiceDbContext>()
-        .AddDefaultTokenProviders()
-        .AddDefaultUI();
+    // Add infrastructure layer services (includes DbContext and Identity)
+    builder.Services.AddInfrastructure(builder.Configuration);
 
-    // 3. Add Duende IdentityServer
+    // Register Identity UI Service to bridge Razor Pages with application layer
+    builder.Services.AddScoped<IdentityUIService>();
+    
+    // Register IEmailSender for Identity UI registration flow
+    builder.Services.AddTransient<Microsoft.AspNetCore.Identity.UI.Services.IEmailSender, IdentityService.API.Services.EmailSender>();
+
+    // Configure cookie and authentication options
+    builder.Services.ConfigureApplicationCookie(options =>
+    {
+        options.LoginPath = "/Identity/Account/Login";
+        options.LogoutPath = "/Identity/Account/Logout";
+        options.AccessDeniedPath = "/Identity/Account/AccessDenied";
+        options.Cookie.Name = "IdentityService.Cookie";
+        options.Cookie.HttpOnly = true;
+        options.Cookie.SameSite = SameSiteMode.None;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    });
+
+    // Configure authentication defaults
+    builder.Services.AddAuthentication(options =>
+    {
+        options.DefaultScheme = IdentityConstants.ApplicationScheme;
+        options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
+    });
+
+    // Configure IdentityServer
     builder.Services.AddIdentityServer(options =>
         {
             options.Events.RaiseErrorEvents = true;
             options.Events.RaiseInformationEvents = true;
             options.Events.RaiseFailureEvents = true;
             options.Events.RaiseSuccessEvents = true;
-
-            // See https://docs.duendesoftware.com/identityserver/v7/fundamentals/resources/
-            // options.EmitStaticAudienceClaim = true;
+            
+            // Add user interaction configuration
+            options.UserInteraction = new Duende.IdentityServer.Configuration.UserInteractionOptions
+            {
+                LoginUrl = "/Identity/Account/Login",
+                LogoutUrl = "/Identity/Account/Logout",
+                ErrorUrl = "/Identity/Error"
+            };
         })
-        // In-memory stores for quick start - Replace with EF Core stores for production
         .AddInMemoryIdentityResources(Config.GetIdentityResources())
         .AddInMemoryApiScopes(Config.GetApiScopes())
-        .AddInMemoryClients(Config.GetClients(builder.Configuration)) // Pass config
-        // Use ApplicationUser
-        .AddAspNetIdentity<ApplicationUser>() // Integrate with ASP.NET Core Identity
-        .AddProfileService<CustomProfileService>(); // Add our custom profile service
+        .AddInMemoryClients(Config.GetClients(builder.Configuration))
+        .AddAspNetIdentity<ApplicationUser>();
+    
+    // Note: IProfileService is registered by the Application layer
+    // in IdentityService.Application.DependencyInjection.cs
+    
+    // Add services to the container
+    builder.Services.AddControllersWithViews();
+    builder.Services.AddRazorPages();
+    
+    // Add API controllers with JSON serialization options
+    builder.Services.AddControllers()
+        .AddJsonOptions(options =>
+        {
+            options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+        });
 
-    // Add services to the container.
-    builder.Services.AddControllersWithViews(); // If you want a UI for login etc.
-    builder.Services.AddRazorPages(); // Add Razor Pages services
+    // Add API versioning
+    builder.Services.AddApiVersioning(options =>
+    {
+        options.ReportApiVersions = true;
+        options.AssumeDefaultVersionWhenUnspecified = true;
+        options.DefaultApiVersion = new Microsoft.AspNetCore.Mvc.ApiVersion(1, 0);
+    });
+
+    // Add CORS policy
+    builder.Services.AddCors(options =>
+    {
+        options.AddPolicy("default", policy =>
+        {
+            policy.WithOrigins(
+                builder.Configuration["ClientUrls:BlazorAppUrl"] ?? "https://localhost:7001",
+                builder.Configuration["ClientUrls:GatewayUrl"] ?? "https://localhost:7200"
+            )
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials();
+        });
+    });
     
     var app = builder.Build();
 
@@ -84,30 +136,32 @@ try
     }
     else
     {
-        // Configure for production (e.g., UseExceptionHandler, UseHsts)
+        app.UseExceptionHandler("/Error");
+        app.UseHsts();
     }
     
-    // app.UseHttpsRedirection(); 
-    app.UseStaticFiles(); // Serve static files (CSS, JS) for Identity UI
-    app.UseRouting(); // Must be before UseIdentityServer and UseAuthorization
-    app.UseIdentityServer(); // Add IdentityServer endpoints
-    app.UseAuthorization(); // IMPORTANT: Authorization comes AFTER UseIdentityServer
+    app.UseStaticFiles();
+    app.UseRouting();
+    app.UseCors("default");
+    app.UseIdentityServer();
+    app.UseAuthorization();
 
     // Map endpoints
-    // First map Razor Pages to prioritize Areas/Identity pages
-    app.MapRazorPages(); // Map scaffolded Identity Pages
-    
-    // Then map controller routes as fallback
+    // First map controller routes for traditional MVC controllers 
     app.MapControllerRoute(
         name: "default",
         pattern: "{controller=Home}/{action=Index}/{id?}");
+        
+    // Then map Razor Pages for Identity UI
+    app.MapRazorPages();
+    
+    // Finally map API controllers 
+    app.MapControllers();
     
     // Seed data just before running (ensures pipeline is mostly built)
-    // Still only in Development environment
     if (app.Environment.IsDevelopment())
     {
         Log.Information("Ensuring database is seeded...");
-        // Uncomment seeding again
         SeedData.EnsureSeedDataAsync(app).GetAwaiter().GetResult();
         Log.Information("Seeding completed.");
     }

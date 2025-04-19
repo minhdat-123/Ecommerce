@@ -1,14 +1,19 @@
 @page "/admin/products"
 @using Ecommerce.Blazor.Models
 @using Ecommerce.Blazor.Services
+@using Ecommerce.Blazor
 @using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
 
 @inject IProductService ProductService
 @inject ICategoryService CategoryService
 @inject IBrandService BrandService
 @inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
-@attribute [Authorize(Roles = "Admin")]
+@attribute [Authorize]
+@implements IDisposable
 
 <h2>Product Management</h2>
 
@@ -123,8 +128,31 @@
     private bool showAddForm = false;
     private bool isReindexing = false;
     
+    private AuthenticationState authState;
+    private bool isUserChecked = false;
+
     protected override async Task OnInitializedAsync()
     {
+        // Check if user is admin
+        authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        Console.WriteLine("Checking admin access to ProductManagement page:");
+        
+        // Print user's email for debugging
+        var email = user.FindFirst(ClaimTypes.Email)?.Value ?? "no email found";
+        Console.WriteLine($"User email: {email}");
+        
+        // Use our custom admin check (static method)
+        if (!Ecommerce.Blazor.AdminRoleProvider.IsUserAdmin(user))
+        {
+            Console.WriteLine("User is not admin, redirecting to home");
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+        
+        Console.WriteLine("User has admin access, loading data");
+        isUserChecked = true;
         await LoadDataAsync();
     }
     
@@ -225,5 +253,12 @@
             isReindexing = false;
             StateHasChanged();
         }
+    }
+    
+    // IDisposable implementation
+    public void Dispose()
+    {
+        // Release any resources used by this component
+        // Nothing specific to dispose at the moment, but implementation is required by IDisposable
     }
 }

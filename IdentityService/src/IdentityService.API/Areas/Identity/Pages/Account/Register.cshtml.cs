@@ -6,13 +6,20 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Text;
+using System.Text.Encodings.Web;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using IdentityService.Domain.Entities;
+using IdentityService.API.Areas.Identity.Services;
 
 namespace IdentityService.API.Areas.Identity.Pages.Account
 {
@@ -20,16 +27,27 @@ namespace IdentityService.API.Areas.Identity.Pages.Account
     {
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IUserStore<ApplicationUser> _userStore;
+        private readonly IUserEmailStore<ApplicationUser> _emailStore;
         private readonly ILogger<RegisterModel> _logger;
+        private readonly IEmailSender _emailSender;
+        private readonly IdentityUIService _identityUIService;
 
         public RegisterModel(
             UserManager<ApplicationUser> userManager,
+            IUserStore<ApplicationUser> userStore,
             SignInManager<ApplicationUser> signInManager,
-            ILogger<RegisterModel> logger)
+            ILogger<RegisterModel> logger,
+            IEmailSender emailSender,
+            IdentityUIService identityUIService)
         {
             _userManager = userManager;
+            _userStore = userStore;
+            _emailStore = GetEmailStore();
             _signInManager = signInManager;
             _logger = logger;
+            _emailSender = emailSender;
+            _identityUIService = identityUIService;
         }
 
         [BindProperty]
@@ -61,59 +79,142 @@ namespace IdentityService.API.Areas.Identity.Pages.Account
         public async Task OnGetAsync(string returnUrl = null)
         {
             ReturnUrl = returnUrl;
-            // Get the external authentication schemes
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
         }
 
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
-            // Get the Blazor App URL from configuration
-            var blazorAppUrl = "https://localhost:7235"; // Default URL for Blazor app
-            
-            // Default to the Blazor app URL if no return URL is provided
-            returnUrl ??= blazorAppUrl;
-            
+            // Set default return URL to the Blazor application if not specified
+            returnUrl ??= "https://localhost:7235";
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
             
             if (ModelState.IsValid)
             {
-                var user = new ApplicationUser 
-                { 
-                    UserName = Input.Email, 
-                    Email = Input.Email,
-                    EmailConfirmed = true  // Auto-confirm email for simplicity
-                };
+                // Log registration attempt for debugging
+                _logger.LogInformation($"Attempting to register user with email: {Input.Email}");
                 
-                var result = await _userManager.CreateAsync(user, Input.Password);
+                var result = await _identityUIService.RegisterUserAsync(Input.Email, Input.Email, Input.Password);
                 
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("User created a new account with password.");
 
-                    // Add user to Customer role by default
-                    await _userManager.AddToRoleAsync(user, "Customer");
-                    
-                    // Sign in the user immediately
-                    await _signInManager.SignInAsync(user, isPersistent: false);
-                    
-                    // Always redirect to the Blazor app after successful registration
-                    // If it's not already a URL starting with the Blazor app
-                    if (!returnUrl.StartsWith(blazorAppUrl))
+                    var userId = (await _userManager.FindByEmailAsync(Input.Email))?.Id;
+                    var code = await _userManager.GenerateEmailConfirmationTokenAsync(await _userManager.FindByEmailAsync(Input.Email));
+                    code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+                    var callbackUrl = Url.Page(
+                        "/Account/ConfirmEmail",
+                        pageHandler: null,
+                        values: new { area = "Identity", userId = userId, code = code, returnUrl = returnUrl },
+                        protocol: Request.Scheme);
+
+                    await _emailSender.SendEmailAsync(Input.Email, "Confirm your email",
+                        $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+
+                    if (_userManager.Options.SignIn.RequireConfirmedAccount)
                     {
-                        returnUrl = blazorAppUrl;
+                        return RedirectToPage("RegisterConfirmation", new { email = Input.Email, returnUrl = returnUrl });
                     }
-                    
-                    return Redirect(returnUrl);
+                    else
+                    {
+                        await _signInManager.SignInAsync(await _userManager.FindByEmailAsync(Input.Email), isPersistent: false);
+                        
+                        // Ensure we're not redirecting to discovery endpoint
+                        if (returnUrl == "/" || returnUrl.Contains(".well-known") || returnUrl.StartsWith("http"))
+                        {
+                            _logger.LogInformation($"External redirect needed, using Redirect instead of LocalRedirect");
+                            return Redirect("https://localhost:7235");
+                        }
+                        
+                        // Only use LocalRedirect for relative URLs
+                        return LocalRedirect(returnUrl);
+                    }
                 }
                 
-                foreach (var error in result.Errors)
+                if (result.Errors != null && result.Errors.Length > 0)
                 {
-                    ModelState.AddModelError(string.Empty, error.Description);
+                    foreach (var error in result.Errors)
+                    {
+                        ModelState.AddModelError(string.Empty, error);
+                    }
+                }
+                else
+                {
+                    var user = CreateUser();
+
+                    await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
+                    await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
+                    var standardResult = await _userManager.CreateAsync(user, Input.Password);
+
+                    if (standardResult.Succeeded)
+                    {
+                        _logger.LogInformation("User created a new account with password.");
+
+                        var userId = await _userManager.GetUserIdAsync(user);
+                        var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                        code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+                        var callbackUrl = Url.Page(
+                            "/Account/ConfirmEmail",
+                            pageHandler: null,
+                            values: new { area = "Identity", userId = userId, code = code, returnUrl = returnUrl },
+                            protocol: Request.Scheme);
+
+                        await _emailSender.SendEmailAsync(Input.Email, "Confirm your email",
+                            $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+
+                        if (_userManager.Options.SignIn.RequireConfirmedAccount)
+                        {
+                            return RedirectToPage("RegisterConfirmation", new { email = Input.Email, returnUrl = returnUrl });
+                        }
+                        else
+                        {
+                            _logger.LogInformation($"Successfully registered new user with email: {Input.Email}");
+                            await _signInManager.SignInAsync(user, isPersistent: false);
+                            
+                            // Check if external redirect is needed
+                            if (returnUrl == "/" || returnUrl.Contains(".well-known") || returnUrl.Contains("Identity/Account") || returnUrl.StartsWith("http"))
+                            {
+                                _logger.LogInformation($"Standard flow: External redirect to Blazor app needed");
+                                return Redirect("https://localhost:7235");
+                            }
+                            
+                            _logger.LogInformation($"Standard flow: Using LocalRedirect to: {returnUrl}");
+                            return LocalRedirect(returnUrl);
+                        }
+                    }
+                    
+                    foreach (var error in standardResult.Errors)
+                    {
+                        ModelState.AddModelError(string.Empty, error.Description);
+                    }
                 }
             }
 
             // If we got this far, something failed, redisplay form
             return Page();
+        }
+
+        private ApplicationUser CreateUser()
+        {
+            try
+            {
+                return Activator.CreateInstance<ApplicationUser>();
+            }
+            catch
+            {
+                throw new InvalidOperationException($"Can't create an instance of '{nameof(ApplicationUser)}'. " +
+                    $"Ensure that '{nameof(ApplicationUser)}' is not an abstract class and has a parameterless constructor, " +
+                    $"or alternatively, set the public property 'User' on this page to an instance of the user class.");
+            }
+        }
+
+        private IUserEmailStore<ApplicationUser> GetEmailStore()
+        {
+            if (!_userManager.SupportsUserEmail)
+            {
+                throw new NotSupportedException("The default UI requires a user store with email support.");
+            }
+            return (IUserEmailStore<ApplicationUser>)_userStore;
         }
     }
 }

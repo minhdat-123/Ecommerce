@@ -62,6 +62,16 @@ namespace  IdentityService.API.Areas.Identity.Pages.Account.Manage
         public static string TwoFactorAuthentication => "TwoFactorAuthentication";
 
         /// <summary>
+        ///     Admin page for managing users
+        /// </summary>
+        public static string UserManagement => "UserManagement";
+
+        /// <summary>
+        ///     Admin page for managing roles
+        /// </summary>
+        public static string RoleManagement => "RoleManagement";
+        
+        /// <summary>
         ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
@@ -108,6 +118,16 @@ namespace  IdentityService.API.Areas.Identity.Pages.Account.Manage
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
         public static string TwoFactorAuthenticationNavClass(ViewContext viewContext) => PageNavClass(viewContext, TwoFactorAuthentication);
+
+        /// <summary>
+        ///     Navigation class for user management page
+        /// </summary>
+        public static string UserManagementNavClass(ViewContext viewContext) => PageNavClass(viewContext, UserManagement);
+
+        /// <summary>
+        ///     Navigation class for role management page
+        /// </summary>
+        public static string RoleManagementNavClass(ViewContext viewContext) => PageNavClass(viewContext, RoleManagement);
 
         /// <summary>
         ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used

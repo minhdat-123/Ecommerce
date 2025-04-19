@@ -91,6 +91,13 @@ public class ApiAuthenticationStateProvider : AuthenticationStateProvider
             var payload = jwt.Split('.')[1];
             var jsonBytes = ParseBase64WithoutPadding(payload);
             var keyValuePairs = JsonSerializer.Deserialize<Dictionary<string, object>>(jsonBytes);
+            
+            // Debug: Log all claims in the JWT payload
+            Console.WriteLine("JWT Token Claims:");
+            foreach (var kvp in keyValuePairs)
+            {
+                Console.WriteLine($"Claim: {kvp.Key} = {kvp.Value}");
+            }
 
             if (keyValuePairs != null)
             {
@@ -115,10 +122,22 @@ public class ApiAuthenticationStateProvider : AuthenticationStateProvider
                 {
                     AddRolesToClaims(claims, simpleRolesClaim);
                 }
-                 // If not found, try the simple name "roles"
+                // If not found, try the simple name "roles"
                 else if (keyValuePairs.TryGetValue("roles", out object? simpleRolesClaimPlural))
                 {
                     AddRolesToClaims(claims, simpleRolesClaimPlural);
+                }
+                
+                // Try to find IdentityServer4/Duende specific role claims with the full URL format
+                // This is important as IdentityServer often uses "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
+                foreach (var kvp in keyValuePairs)
+                {
+                    // Look for any key that ends with '/role' which could be the full IdentityServer role claim type
+                    if (kvp.Key.EndsWith("/role") && !kvp.Key.Equals(ClaimTypes.Role) && !kvp.Key.Equals("role"))
+                    {
+                        Console.WriteLine($"Found potential IdentityServer role claim: {kvp.Key}");
+                        AddRolesToClaims(claims, kvp.Value);
+                    }
                 }
                 // ---- End Flexible Role Claim Extraction ----
             }
@@ -133,21 +152,43 @@ public class ApiAuthenticationStateProvider : AuthenticationStateProvider
     // Helper method to handle adding single string or array of roles
     private void AddRolesToClaims(List<Claim> claims, object? rolesClaim)
     {
-        if (rolesClaim is JsonElement rolesElement && rolesElement.ValueKind == JsonValueKind.Array)
+        Console.WriteLine($"Processing role claim of type: {rolesClaim?.GetType().Name ?? "null"}");
+        
+        if (rolesClaim is JsonElement rolesElement)
         {
-            foreach (var role in rolesElement.EnumerateArray())
+            Console.WriteLine($"Role claim is a JsonElement with ValueKind: {rolesElement.ValueKind}");
+            
+            if (rolesElement.ValueKind == JsonValueKind.Array)
             {
-                if (role.ValueKind == JsonValueKind.String)
+                Console.WriteLine("Processing role array...");
+                foreach (var role in rolesElement.EnumerateArray())
                 {
-                    claims.Add(new Claim(ClaimTypes.Role, role.GetString() ?? string.Empty));
+                    if (role.ValueKind == JsonValueKind.String)
+                    {
+                        var roleValue = role.GetString() ?? string.Empty;
+                        Console.WriteLine($"Adding role: {roleValue}");
+                        claims.Add(new Claim(ClaimTypes.Role, roleValue));
+                    }
                 }
+            }
+            else if (rolesElement.ValueKind == JsonValueKind.String)
+            {
+                var roleValue = rolesElement.GetString() ?? string.Empty;
+                Console.WriteLine($"Adding single role (JsonElement string): {roleValue}");
+                claims.Add(new Claim(ClaimTypes.Role, roleValue));
             }
         }
         else if (rolesClaim != null)
         {
             // Assume single role string
-            claims.Add(new Claim(ClaimTypes.Role, rolesClaim.ToString() ?? string.Empty));
+            var roleValue = rolesClaim.ToString() ?? string.Empty;
+            Console.WriteLine($"Adding single role (direct string): {roleValue}");
+            claims.Add(new Claim(ClaimTypes.Role, roleValue));
         }
+        
+        // After processing, list all roles added to claims
+        var roles = claims.Where(c => c.Type == ClaimTypes.Role).Select(c => c.Value);
+        Console.WriteLine($"All roles after processing: {string.Join(", ", roles)}");
     }
 
     private byte[] ParseBase64WithoutPadding(string base64)

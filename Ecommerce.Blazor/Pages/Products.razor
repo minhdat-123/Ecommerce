@@ -2,6 +2,7 @@
 @using Ecommerce.Blazor.Models
 @using Ecommerce.Blazor.Services
 @using Ecommerce.Blazor.Shared
+@using Ecommerce.Blazor
 @using Microsoft.AspNetCore.Components.Web
 @using System.Net.Http
 @using System.Text.Json
@@ -31,9 +32,12 @@
         }
         <button @onclick="Search">Search</button>
         
-        <AuthorizeView Roles="Admin">
+        <AuthorizeView>
             <Authorized>
-                <button class="add-product-button" @onclick="OpenAddProductModal">Add Product</button>
+                @if (AdminRoleProvider.IsUserAdmin(context.User))
+                {
+                    <button class="add-product-button" @onclick="OpenAddProductModal">Add Product</button>
+                }
             </Authorized>
         </AuthorizeView>
     </div>

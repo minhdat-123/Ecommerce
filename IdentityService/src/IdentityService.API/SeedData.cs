@@ -33,11 +33,14 @@ public class SeedData
             Log.Information("Seeding database...");
 
             // Seed Roles
-            await EnsureRoleAsync(roleMgr, "Admin");
-            await EnsureRoleAsync(roleMgr, "Customer");
+            await EnsureRoleAsync(roleMgr, "Administrator");
+            await EnsureRoleAsync(roleMgr, "User");
 
             // Seed Admin User
-            await EnsureUserAsync(userMgr, "admin@ecom.com", "Dicentral@9", "Admin");
+            await EnsureUserAsync(userMgr, "admin@ecom.com", "Dicentral@9", "Administrator");
+            
+            // Create a regular user for testing
+            await EnsureUserAsync(userMgr, "user@ecom.com", "Dicentral@9", "User");
 
             Log.Information("Done seeding database.");
         }
@@ -103,7 +106,8 @@ public class SeedData
                 {
                     throw new Exception(roleResult.Errors.First().Description);
                 }
+                Log.Debug($"User {email} assigned to role {roleName}");
             }
         }
     }
-} 
+}

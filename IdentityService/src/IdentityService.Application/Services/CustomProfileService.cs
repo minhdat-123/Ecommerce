@@ -2,14 +2,14 @@ using IdentityModel;
 using IdentityService.Domain.Entities;
 using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Models;
-using Duende.IdentityServer.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using System.Security.Claims;
+using IdentityService.Application.Interfaces;
 
-namespace IdentityService.API.Services
+namespace IdentityService.Application.Services
 {
-    public class CustomProfileService : IProfileService
+    public class CustomProfileService : IIdentityProfileService
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IUserClaimsPrincipalFactory<ApplicationUser> _claimsFactory;
@@ -81,4 +81,4 @@ namespace IdentityService.API.Services
             context.IsActive = user != null;
         }
     }
-} 
+}

@@ -16,15 +16,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // --- Configuration --- 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-var jwtKey = builder.Configuration["Jwt:Key"];
-var jwtIssuer = builder.Configuration["Jwt:Issuer"];
-var jwtAudience = builder.Configuration["Jwt:Audience"];
-
-// Validate JWT configuration - Re-enabled
-if (string.IsNullOrEmpty(jwtKey) || string.IsNullOrEmpty(jwtIssuer) || string.IsNullOrEmpty(jwtAudience))
-{
-    throw new ArgumentNullException("JWT settings (Key, Issuer, Audience) are missing in configuration.");
-}
+// Removed JWT Key/Issuer/Audience variables as authentication is now handled by IdentityServer
 
 // --- Service Registration --- 
 
@@ -33,10 +25,10 @@ builder.Services.AddInfrastructure(connectionString);
 builder.Services.AddApplication();
 builder.Services.AddElasticsearch(builder.Configuration);
 
-// Add Identity Services
-builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
-    .AddEntityFrameworkStores<AppDbContext>()
-    .AddDefaultTokenProviders();
+// Remove local Identity setup - Handled by IdentityService
+// builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
+//     .AddEntityFrameworkStores<AppDbContext>()
+//     .AddDefaultTokenProviders();
 
 // Add Authentication
 builder.Services.AddAuthentication(options =>
@@ -47,17 +39,18 @@ builder.Services.AddAuthentication(options =>
 })
 .AddJwtBearer(options =>
 {
-    options.SaveToken = true;
-    options.RequireHttpsMetadata = false; // Set to true in production
-    options.TokenValidationParameters = new TokenValidationParameters()
+    // Configure validation against IdentityService
+    options.Authority = "https://localhost:7273"; // URL of your IdentityService
+    options.Audience = "ecommerce.api"; // The API scope name defined in IdentityService
+
+    options.RequireHttpsMetadata = false; // Set to true in production environments
+    options.TokenValidationParameters = new TokenValidationParameters
     {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
-        ValidAudience = jwtAudience,
-        ValidIssuer = jwtIssuer,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
+        ValidateAudience = true, // Ensure the token is intended for this API
+        ValidateIssuer = true,   // Ensure the token came from the correct authority
+        // IssuerSigningKey validation is handled automatically via the discovery endpoint
+        NameClaimType = "name", // Optional: Map 'name' claim
+        RoleClaimType = "role"  // Optional: Map 'role' claim
     };
 });
 

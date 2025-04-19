@@ -44,6 +44,12 @@
                             "usually located at '/Pages/_LoginPartial' or at '/Views/Shared/_LoginPartial' to work. Based on your configuration " +
                             $"we have looked at it in the following locations: {System.Environment.NewLine}{string.Join(System.Environment.NewLine, result.SearchedLocations)}.");
                     }
+                    <ul class="navbar-nav flex-grow-1">
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" href="~/">Home</a>
+                        </li>
+                        <partial name="_AdminNavPartial" />
+                    </ul>
                 </div>
             </div>
         </nav>
@@ -51,13 +57,14 @@
 
     <div class="container">
         <partial name="_CookieConsentPartial" optional />
-        <main role="main" class="pb-1">
+        <main role="main" class="pb-3">
             @RenderBody()
         </main>
     </div>
-    <footer class="footer border-top pl-3 text-muted">
+    
+    <footer class="footer border-top text-muted">
         <div class="container">
-        &copy; 2025 - IdentityService.API
+            &copy; 2025 - IdentityService.API 
             @{
                 var foundPrivacy = Url.Page("/Privacy", new { area = "" });
             }
