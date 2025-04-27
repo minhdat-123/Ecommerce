@@ -74,7 +74,7 @@ builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddAuthorizationCore(); 
 
 // Register application services (these should now use the IHttpClientFactory injected client)
-builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<IProductService, Ecommerce.Blazor.Services.ProductService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IBrandService, BrandService>();
 // Add Identity service for user profile operations via API gateway

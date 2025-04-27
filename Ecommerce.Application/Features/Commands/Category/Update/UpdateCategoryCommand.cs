@@ -1,6 +1,6 @@
 using System;
 
-namespace Ecommerce.Application.Features.Commands.Category.Update
+namespace ProductService.Application.Features.Commands.Category.Update
 {
     public class UpdateCategoryCommand
     {

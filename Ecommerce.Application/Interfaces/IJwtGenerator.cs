@@ -1,7 +1,7 @@
-using Ecommerce.Domain.Entities;
+using ProductService.Domain.Entities;
 using System.Collections.Generic;
 
-namespace Ecommerce.Application.Interfaces;
+namespace ProductService.Application.Interfaces;
 
 public interface IJwtGenerator
 {

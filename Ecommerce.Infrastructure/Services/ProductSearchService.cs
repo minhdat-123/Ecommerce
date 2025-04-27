@@ -1,7 +1,7 @@
-﻿using Ecommerce.Application.Features.Queries.Product.Search;
-using Ecommerce.Application.Interfaces;
-using Ecommerce.Domain.ElasticSearch.Documents;
-using Ecommerce.Domain.Entities;
+using ProductService.Application.Features.Queries.Product.Search;
+using ProductService.Application.Interfaces;
+using ProductService.Domain.ElasticSearch.Documents;
+using ProductService.Domain.Entities;
 using Elastic.Clients.Elasticsearch;
 using Elastic.Clients.Elasticsearch.Core.Search;
 using Elastic.Clients.Elasticsearch.Mapping;
@@ -15,7 +15,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Ecommerce.Infrastructure.Services
+namespace ProductService.Infrastructure.Services
 {
     public class ProductSearchService : IProductSearchService
     {
@@ -308,3 +308,4 @@ namespace Ecommerce.Infrastructure.Services
         }
     }
 }
+

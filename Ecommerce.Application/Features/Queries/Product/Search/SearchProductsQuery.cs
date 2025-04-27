@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Ecommerce.Application.Features.Queries.Product.Search
+namespace ProductService.Application.Features.Queries.Product.Search
 {
     public class SearchProductsQuery
     {
@@ -21,3 +21,4 @@ namespace Ecommerce.Application.Features.Queries.Product.Search
     }
 
 }
+

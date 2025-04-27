@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Ecommerce.Application.Interfaces;
+using ProductService.Application.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Ecommerce.Application
+namespace ProductService.Application
 {
     public static class DependencyInjection
     {
@@ -27,3 +27,4 @@ namespace Ecommerce.Application
         }
     }
 }
+

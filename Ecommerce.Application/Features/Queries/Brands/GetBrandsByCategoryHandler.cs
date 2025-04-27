@@ -1,7 +1,7 @@
-using Ecommerce.Application.Interfaces;
-using Ecommerce.Domain.Entities;
+using ProductService.Application.Interfaces;
+using ProductService.Domain.Entities;
 
-namespace Ecommerce.Application.Features.Queries.Brands
+namespace ProductService.Application.Features.Queries.Brands
 {
     public class GetBrandsByCategoryQuery
     {

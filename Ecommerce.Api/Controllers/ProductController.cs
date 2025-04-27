@@ -1,16 +1,16 @@
-﻿using Ecommerce.Application.Features.Commands.Product.AddNew;
-using Ecommerce.Application.Features.Commands.Product.Delete;
-using Ecommerce.Application.Features.Commands.Product.Index;
-using Ecommerce.Application.Features.Queries.Product.GetList;
-using Ecommerce.Application.Features.Queries.Product.Search;
-using Ecommerce.Application.Features.Queries.Product.Suggestion;
-using Ecommerce.Application.Interfaces;
-using Ecommerce.Domain.Entities;
+using ProductService.Application.Features.Commands.Product.AddNew;
+using ProductService.Application.Features.Commands.Product.Delete;
+using ProductService.Application.Features.Commands.Product.Index;
+using ProductService.Application.Features.Queries.Product.GetList;
+using ProductService.Application.Features.Queries.Product.Search;
+using ProductService.Application.Features.Queries.Product.Suggestion;
+using ProductService.Application.Interfaces;
+using ProductService.Domain.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 
-namespace Ecommerce.Api.Controllers
+namespace ProductService.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -126,3 +126,4 @@ namespace Ecommerce.Api.Controllers
         }
     }
 }
+

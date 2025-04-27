@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Ecommerce.Application.DTOs;
+namespace ProductService.Application.DTOs;
 
 public class LoginRequest
 {

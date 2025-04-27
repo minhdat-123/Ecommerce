@@ -1,12 +1,12 @@
-using Ecommerce.Application.Interfaces;
-using Ecommerce.Domain.ElasticSearch.Documents;
+using ProductService.Application.Interfaces;
+using ProductService.Domain.ElasticSearch.Documents;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Ecommerce.Application.Features.Commands.Product.Index
+namespace ProductService.Application.Features.Commands.Product.Index
 {
     public class IndexProductsCommandHandler : ICommandHandler<IndexProductsCommand>
     {

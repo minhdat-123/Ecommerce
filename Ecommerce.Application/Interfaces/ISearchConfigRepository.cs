@@ -1,8 +1,8 @@
-using Ecommerce.Domain.Entities;
+using ProductService.Domain.Entities;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Ecommerce.Application.Interfaces
+namespace ProductService.Application.Interfaces
 {
     public interface ISearchConfigRepository
     {

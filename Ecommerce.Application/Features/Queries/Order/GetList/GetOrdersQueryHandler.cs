@@ -1,11 +1,11 @@
-﻿using Ecommerce.Application.Interfaces;
+using ProductService.Application.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Ecommerce.Application.Features.Queries.Order.GetList
+namespace ProductService.Application.Features.Queries.Order.GetList
 {
     public class GetOrdersQueryHandler : IQueryHandler<GetOrdersQuery, List<Domain.Entities.Order>>
     {
@@ -23,3 +23,4 @@ namespace Ecommerce.Application.Features.Queries.Order.GetList
     }
 
 }
+

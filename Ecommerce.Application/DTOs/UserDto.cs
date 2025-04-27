@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Ecommerce.Application.DTOs;
+namespace ProductService.Application.DTOs;
 
 // Similar to UserInfo in Blazor, but maybe without sensitive info like ID depending on needs
 public class UserDto

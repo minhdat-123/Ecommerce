@@ -1,13 +1,13 @@
-using Ecommerce.Application.Interfaces;
-using Ecommerce.Domain.Entities;
-using Ecommerce.Infrastructure.Data;
+using ProductService.Application.Interfaces;
+using ProductService.Domain.Entities;
+using ProductService.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Ecommerce.Infrastructure.Repositories
+namespace ProductService.Infrastructure.Repositories
 {
     public class SearchConfigRepository : ISearchConfigRepository
     {

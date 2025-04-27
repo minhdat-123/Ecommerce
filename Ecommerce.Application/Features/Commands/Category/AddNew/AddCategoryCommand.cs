@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Ecommerce.Application.Features.Commands.Category.AddNew
+namespace ProductService.Application.Features.Commands.Category.AddNew
 {
     public class AddCategoryCommand
     {

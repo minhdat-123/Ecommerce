@@ -1,11 +1,11 @@
-﻿using Ecommerce.Application.Interfaces;
+using ProductService.Application.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Ecommerce.Application.Features.Queries.Product.GetList
+namespace ProductService.Application.Features.Queries.Product.GetList
 {
     public class GetProductsQueryHandler : IQueryHandler<GetProductsQuery, List<Domain.Entities.Product>>
     {
@@ -23,3 +23,4 @@ namespace Ecommerce.Application.Features.Queries.Product.GetList
     }
 
 }
+

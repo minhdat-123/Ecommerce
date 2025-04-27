@@ -1,14 +1,14 @@
-using Ecommerce.Application.Features.Commands.Category.AddNew;
-using Ecommerce.Application.Features.Commands.Category.Update;
-using Ecommerce.Application.Features.Commands.Category.Delete;
-using Ecommerce.Application.Features.Queries.Category.GetList;
-using Ecommerce.Application.Interfaces;
+using ProductService.Application.Features.Commands.Category.AddNew;
+using ProductService.Application.Features.Commands.Category.Update;
+using ProductService.Application.Features.Commands.Category.Delete;
+using ProductService.Application.Features.Queries.Category.GetList;
+using ProductService.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Ecommerce.Domain.Entities;
-using Ecommerce.Application.Features.Queries.Category.GetSub;
-using Ecommerce.Application.Features.Queries.Category.GetTopLevel;
+using ProductService.Domain.Entities;
+using ProductService.Application.Features.Queries.Category.GetSub;
+using ProductService.Application.Features.Queries.Category.GetTopLevel;
 
-namespace Ecommerce.Api.Controllers
+namespace ProductService.Api.Controllers
 {
     [ApiController]
     [Route("api/categories")]

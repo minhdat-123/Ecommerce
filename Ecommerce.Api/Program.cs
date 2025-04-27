@@ -1,9 +1,9 @@
-using Ecommerce.Application;
-using Ecommerce.Domain.Entities;
-using Ecommerce.Infrastructure;
-using Ecommerce.Infrastructure.Data;
-using Ecommerce.Infrastructure.Extensions;
-using Ecommerce.Infrastructure.Services;
+using ProductService.Application;
+using ProductService.Domain.Entities;
+using ProductService.Infrastructure;
+using ProductService.Infrastructure.Data;
+using ProductService.Infrastructure.Extensions;
+using ProductService.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -41,7 +41,7 @@ builder.Services.AddAuthentication(options =>
 {
     // Configure validation against IdentityService
     options.Authority = "https://localhost:7273"; // URL of your IdentityService
-    options.Audience = "ecommerce.api"; // The API scope name defined in IdentityService
+    options.Audience = "ProductService.Api"; // The API scope name defined in IdentityService
 
     options.RequireHttpsMetadata = false; // Set to true in production environments
     options.TokenValidationParameters = new TokenValidationParameters
@@ -155,3 +155,4 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+

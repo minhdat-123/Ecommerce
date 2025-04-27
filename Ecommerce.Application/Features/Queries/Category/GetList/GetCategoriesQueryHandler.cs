@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Ecommerce.Application.Interfaces;
-using Ecommerce.Domain.Entities;
+using ProductService.Application.Interfaces;
+using ProductService.Domain.Entities;
 
-namespace Ecommerce.Application.Features.Queries.Category.GetList
+namespace ProductService.Application.Features.Queries.Category.GetList
 {
     public class GetCategoriesQueryHandler : IQueryHandler<GetCategoriesQuery, List<Domain.Entities.Category>>
     {

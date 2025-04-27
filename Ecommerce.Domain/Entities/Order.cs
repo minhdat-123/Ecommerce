@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Ecommerce.Domain.Entities
+namespace ProductService.Domain.Entities
 {
     public class Order
     {
@@ -15,3 +15,4 @@ namespace Ecommerce.Domain.Entities
         public int Quantity { get; set; }
     }
 }
+

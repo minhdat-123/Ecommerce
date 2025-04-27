@@ -1,4 +1,4 @@
-namespace Ecommerce.Application.DTOs;
+namespace ProductService.Application.DTOs;
 
 public class AuthResponse
 {

@@ -1,7 +1,7 @@
-using Ecommerce.Application.Interfaces;
-using Ecommerce.Domain.Entities;
+using ProductService.Application.Interfaces;
+using ProductService.Domain.Entities;
 
-namespace Ecommerce.Application.Features.Queries.Category.GetTopLevel
+namespace ProductService.Application.Features.Queries.Category.GetTopLevel
 {
     public class GetTopLevelCategoriesQuery { }
 

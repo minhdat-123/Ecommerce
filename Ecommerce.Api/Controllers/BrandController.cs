@@ -1,10 +1,10 @@
-using Ecommerce.Application.Features.Queries.Brands;
-using Ecommerce.Application.Interfaces;
-using Ecommerce.Domain.Entities;
+using ProductService.Application.Features.Queries.Brands;
+using ProductService.Application.Interfaces;
+using ProductService.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 
-namespace Ecommerce.Api.Controllers
+namespace ProductService.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]

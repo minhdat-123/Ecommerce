@@ -1,8 +1,8 @@
-using Ecommerce.Application.Interfaces;
+using ProductService.Application.Interfaces;
 using System;
 using System.Threading.Tasks;
 
-namespace Ecommerce.Application.Features.Commands.Category.Update
+namespace ProductService.Application.Features.Commands.Category.Update
 {
     public class UpdateCategoryCommandHandler : ICommandHandler<UpdateCategoryCommand>
     {

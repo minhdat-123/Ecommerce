@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Ecommerce.Application.Features.Commands.Order.AddNew
+namespace ProductService.Application.Features.Commands.Order.AddNew
 {
     public class AddOrderCommand
     {
@@ -13,3 +13,4 @@ namespace Ecommerce.Application.Features.Commands.Order.AddNew
     }
 
 }
+

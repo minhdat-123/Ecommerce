@@ -1,7 +1,7 @@
-using Ecommerce.Application.Interfaces;
+using ProductService.Application.Interfaces;
 using System.Threading.Tasks;
 
-namespace Ecommerce.Application.Features.Commands.Category.AddNew
+namespace ProductService.Application.Features.Commands.Category.AddNew
 {
     public class AddCategoryCommandHandler : ICommandHandler<AddCategoryCommand>
     {

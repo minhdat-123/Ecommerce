@@ -3,21 +3,25 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.12.35707.178
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ecommerce.Api", "Ecommerce.Api\Ecommerce.Api.csproj", "{F22CE91D-FC01-4C39-9B87-B4E8CF77D5C3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProductService.Api", "Ecommerce.Api\ProductService.Api.csproj", "{F22CE91D-FC01-4C39-9B87-B4E8CF77D5C3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ecommerce.Domain", "Ecommerce.Domain\Ecommerce.Domain.csproj", "{6AA65720-2567-4A87-80B2-3FF21A54D48C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProductService.Domain", "Ecommerce.Domain\ProductService.Domain.csproj", "{6AA65720-2567-4A87-80B2-3FF21A54D48C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ecommerce.Infrastructure", "Ecommerce.Infrastructure\Ecommerce.Infrastructure.csproj", "{F7412182-C3EB-4D22-BFEF-6EB5A0B7F4E0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProductService.Infrastructure", "Ecommerce.Infrastructure\ProductService.Infrastructure.csproj", "{F7412182-C3EB-4D22-BFEF-6EB5A0B7F4E0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ecommerce.Application", "Ecommerce.Application\Ecommerce.Application.csproj", "{681F5476-BB2A-4A0C-8196-C0EF6CE75540}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProductService.Application", "Ecommerce.Application\ProductService.Application.csproj", "{681F5476-BB2A-4A0C-8196-C0EF6CE75540}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ecommerce.Blazor", "Ecommerce.Blazor\Ecommerce.Blazor.csproj", "{B5A2E74C-D83F-4A4B-9B6A-395D3F74D7C9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ecommerce.Blazor", "Apps\Ecommerce.Blazor\Ecommerce.Blazor.csproj", "{B5A2E74C-D83F-4A4B-9B6A-395D3F74D7C9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ecommerce.ApiGateway", "Ecommerce.ApiGateway\Ecommerce.ApiGateway.csproj", "{EE1CC639-9E7F-4C62-96EC-3ADA25CD4539}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ecommerce.ApiGateway", "APIGetways\Ecommerce.ApiGateway\Ecommerce.ApiGateway.csproj", "{EE1CC639-9E7F-4C62-96EC-3ADA25CD4539}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "IdentityService", "IdentityService", "{C92C2A6C-C7DF-3B17-8CE7-85FC08468CCF}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{0A3E987B-98C3-8C4E-5D00-0242529CE33D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Apps", "Apps", "{FAAAA123-BBBB-CCCC-DDDD-0242AC120000}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "APIGetways", "APIGetways", "{AAAAA123-BBBB-CCCC-DDDD-0242AC120001}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IdentityService.API", "IdentityService\src\IdentityService.API\IdentityService.API.csproj", "{5D5DF2DE-00A9-4635-87CC-EF4D6B2E71DC}"
 EndProject
@@ -162,10 +166,15 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
+		{B5A2E74C-D83F-4A4B-9B6A-395D3F74D7C9} = {FAAAA123-BBBB-CCCC-DDDD-0242AC120000}
+		{EE1CC639-9E7F-4C62-96EC-3ADA25CD4539} = {AAAAA123-BBBB-CCCC-DDDD-0242AC120001}
 		{0A3E987B-98C3-8C4E-5D00-0242529CE33D} = {C92C2A6C-C7DF-3B17-8CE7-85FC08468CCF}
 		{5D5DF2DE-00A9-4635-87CC-EF4D6B2E71DC} = {0A3E987B-98C3-8C4E-5D00-0242529CE33D}
 		{701B6DC0-5E29-41A0-8DBD-0A77CF6E2F9F} = {0A3E987B-98C3-8C4E-5D00-0242529CE33D}
 		{FBB37F5D-452F-4424-BCD2-CD79845350C1} = {0A3E987B-98C3-8C4E-5D00-0242529CE33D}
 		{383F71EA-E6B2-42CD-AE0F-7039B6580C11} = {0A3E987B-98C3-8C4E-5D00-0242529CE33D}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {38197F11-5A77-48EF-9D10-C3C07FB1C2CE}
 	EndGlobalSection
 EndGlobal

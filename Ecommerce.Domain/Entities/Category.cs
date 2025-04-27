@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Ecommerce.Domain.Entities
+namespace ProductService.Domain.Entities
 {
     public class Category
     {
@@ -18,3 +18,4 @@ namespace Ecommerce.Domain.Entities
     }
 
 }
+

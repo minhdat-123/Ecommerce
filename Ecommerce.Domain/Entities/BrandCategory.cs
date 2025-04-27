@@ -1,4 +1,4 @@
-namespace Ecommerce.Domain.Entities
+namespace ProductService.Domain.Entities
 {
     public class BrandCategory
     {

@@ -1,4 +1,4 @@
-﻿using Elastic.Clients.Elasticsearch;
+using Elastic.Clients.Elasticsearch;
 using Elastic.Transport;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Ecommerce.Infrastructure.Extensions
+namespace ProductService.Infrastructure.Extensions
 {
     public static class ElasticsearchExtensions
     {
@@ -33,3 +33,4 @@ namespace Ecommerce.Infrastructure.Extensions
         }
     }
 }
+

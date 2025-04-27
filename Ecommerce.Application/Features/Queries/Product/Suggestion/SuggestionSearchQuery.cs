@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Ecommerce.Application.Features.Queries.Product.Suggestion
+namespace ProductService.Application.Features.Queries.Product.Suggestion
 {
     public class SuggestionSearchQuery
     {

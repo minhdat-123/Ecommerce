@@ -1,11 +1,11 @@
-﻿using Ecommerce.Application.Features.Commands.Order.AddNew;
-using Ecommerce.Application.Features.Queries.Order.GetList;
-using Ecommerce.Application.Interfaces;
-using Ecommerce.Domain.Entities;
+using ProductService.Application.Features.Commands.Order.AddNew;
+using ProductService.Application.Features.Queries.Order.GetList;
+using ProductService.Application.Interfaces;
+using ProductService.Domain.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Ecommerce.Api.Controllers
+namespace ProductService.Api.Controllers
 {
     [ApiController]
     [Route("api/orders")]
@@ -39,3 +39,4 @@ namespace Ecommerce.Api.Controllers
     }
 
 }
+

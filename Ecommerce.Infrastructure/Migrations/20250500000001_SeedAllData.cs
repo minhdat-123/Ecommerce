@@ -4,11 +4,11 @@ using System.Linq;
 using Microsoft.EntityFrameworkCore.Migrations;
 // Remove using for Identity/Entities if no longer needed directly in this file
 // using Microsoft.AspNetCore.Identity;
-// using Ecommerce.Domain.Entities;
+// using ProductService.Domain.Entities;
 
 #nullable disable
 
-namespace Ecommerce.Infrastructure.Migrations
+namespace ProductService.Infrastructure.Migrations
 {
     /// <inheritdoc />
     public partial class SeedAllData : Migration
@@ -39,7 +39,7 @@ namespace Ecommerce.Infrastructure.Migrations
             var assembly = typeof(SeedAllData).Assembly;
             var manifestResourceNames = assembly.GetManifestResourceNames();
             var fileName = Array.Find(manifestResourceNames, fileName =>
-                fileName.StartsWith("Ecommerce.Infrastructure", StringComparison.InvariantCultureIgnoreCase) &&
+                fileName.StartsWith("ProductService.Infrastructure", StringComparison.InvariantCultureIgnoreCase) &&
                 fileName.EndsWith(fileNameMigration, StringComparison.InvariantCultureIgnoreCase)
             );
             

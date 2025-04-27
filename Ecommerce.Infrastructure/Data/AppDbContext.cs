@@ -1,4 +1,4 @@
-﻿using Ecommerce.Domain.Entities;
+using ProductService.Domain.Entities;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Ecommerce.Infrastructure.Data
+namespace ProductService.Infrastructure.Data
 {
     public class AppDbContext : IdentityDbContext<ApplicationUser>
     {
@@ -59,3 +59,4 @@ namespace Ecommerce.Infrastructure.Data
     }
 
 }
+

@@ -1,11 +1,11 @@
-﻿using Ecommerce.Application.Interfaces;
+using ProductService.Application.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Ecommerce.Application.Features.Queries.Product.Search
+namespace ProductService.Application.Features.Queries.Product.Search
 {
     public class SearchProductsQueryHandler : IQueryHandler<SearchProductsQuery, SearchProductsResponse>
     {
@@ -24,3 +24,4 @@ namespace Ecommerce.Application.Features.Queries.Product.Search
     }
 
 }
+

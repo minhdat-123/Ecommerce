@@ -1,10 +1,10 @@
-using Ecommerce.Application.Interfaces;
-using Ecommerce.Domain.Entities;
-using Ecommerce.Infrastructure.Data;
+using ProductService.Application.Interfaces;
+using ProductService.Domain.Entities;
+using ProductService.Infrastructure.Data;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 
-namespace Ecommerce.Infrastructure.Repositories
+namespace ProductService.Infrastructure.Repositories
 {
     public class CategoryRepository : ICategoryRepository
     {

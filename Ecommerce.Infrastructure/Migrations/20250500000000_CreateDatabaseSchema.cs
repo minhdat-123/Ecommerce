@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace Ecommerce.Infrastructure.Migrations
+namespace ProductService.Infrastructure.Migrations
 {
     /// <inheritdoc />
     public partial class CreateDatabaseSchema : Migration

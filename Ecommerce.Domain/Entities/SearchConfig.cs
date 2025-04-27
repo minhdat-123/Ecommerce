@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Ecommerce.Domain.Entities
+namespace ProductService.Domain.Entities
 {
     public class SearchConfig
     {

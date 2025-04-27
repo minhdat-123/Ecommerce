@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Ecommerce.Application.Features.Commands.Product.Index
+namespace ProductService.Application.Features.Commands.Product.Index
 {
     public class IndexProductsCommand
     {

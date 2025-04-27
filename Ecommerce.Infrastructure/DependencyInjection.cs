@@ -1,7 +1,7 @@
-﻿using Ecommerce.Application.Interfaces;
-using Ecommerce.Infrastructure.Data;
-using Ecommerce.Infrastructure.Repositories;
-using Ecommerce.Infrastructure.Services;
+using ProductService.Application.Interfaces;
+using ProductService.Infrastructure.Data;
+using ProductService.Infrastructure.Repositories;
+using ProductService.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -10,7 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Ecommerce.Infrastructure
+namespace ProductService.Infrastructure
 {
     public static class DependencyInjection
     {
@@ -31,3 +31,4 @@ namespace Ecommerce.Infrastructure
         }
     }
 }
+

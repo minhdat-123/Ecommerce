@@ -1,14 +1,14 @@
-using Ecommerce.Infrastructure.Data;
+using ProductService.Infrastructure.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Identity;
-using Ecommerce.Domain.Entities; // Ensure this is present
+using ProductService.Domain.Entities; // Ensure this is present
 using System;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Ecommerce.Api.Controllers
+namespace ProductService.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]

@@ -1,5 +1,5 @@
-using Ecommerce.Application.Interfaces;
-using Ecommerce.Domain.Entities;
+using ProductService.Application.Interfaces;
+using ProductService.Domain.Entities;
 using Microsoft.Extensions.Configuration; // Required for reading config
 using Microsoft.IdentityModel.Tokens; // Required for SecurityKey, SigningCredentials
 using System;
@@ -8,7 +8,7 @@ using System.IdentityModel.Tokens.Jwt; // Required for JwtSecurityTokenHandler
 using System.Security.Claims; // Required for Claim
 using System.Text; // Required for Encoding
 
-namespace Ecommerce.Infrastructure.Services;
+namespace ProductService.Infrastructure.Services;
 
 public class JwtGenerator : IJwtGenerator
 {

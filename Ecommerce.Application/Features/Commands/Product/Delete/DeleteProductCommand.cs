@@ -1,6 +1,6 @@
 using System;
 
-namespace Ecommerce.Application.Features.Commands.Product.Delete
+namespace ProductService.Application.Features.Commands.Product.Delete
 {
     public class DeleteProductCommand
     {

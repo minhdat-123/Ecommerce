@@ -1,8 +1,8 @@
-using Ecommerce.Application.Interfaces;
+using ProductService.Application.Interfaces;
 using System;
 using System.Threading.Tasks;
 
-namespace Ecommerce.Application.Features.Commands.Category.Delete
+namespace ProductService.Application.Features.Commands.Category.Delete
 {
     public class DeleteCategoryCommandHandler : ICommandHandler<DeleteCategoryCommand>
     {

@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Ecommerce.Domain.ElasticSearch.Documents
+namespace ProductService.Domain.ElasticSearch.Documents
 {
     public class CompletionField
     {
@@ -26,3 +26,4 @@ namespace Ecommerce.Domain.ElasticSearch.Documents
         public CompletionField NameSuggest { get; set; }
     }
 }
+
