@@ -20,28 +20,33 @@ namespace Ecommerce.Blazor.Services
 
         private HttpClient CreateClient() => _httpClientFactory.CreateClient(ApiClientName);
 
+        private string BuildApiUrl(string path)
+        {
+            return _apiSettings.ApiUrl.TrimEnd('/') + "/" + path.TrimStart('/');
+        }
+
         public async Task<List<Category>> GetCategoriesAsync()
         {
             var client = CreateClient();
-            var response = await client.GetAsync($"{_apiSettings.ApiUrl}/categories");
+            var response = await client.GetAsync(BuildApiUrl("categories"));
             response.EnsureSuccessStatusCode();
-            return await response.Content.ReadFromJsonAsync<List<Category>>(_jsonOptions) ?? new List<Category>();
+            return await response.Content.ReadFromJsonAsync<List<Category>>() ?? new List<Category>();
         }
 
         public async Task<List<Category>> GetTopLevelCategoriesAsync()
         {
             var client = CreateClient();
-            var response = await client.GetAsync($"{_apiSettings.ApiUrl}/categories/top-level");
+            var response = await client.GetAsync(BuildApiUrl("categories/top-level"));
             response.EnsureSuccessStatusCode();
-            return await response.Content.ReadFromJsonAsync<List<Category>>(_jsonOptions) ?? new List<Category>();
+            return await response.Content.ReadFromJsonAsync<List<Category>>() ?? new List<Category>();
         }
 
         public async Task<List<Category>> GetSubcategoriesAsync(int parentCategoryId)
         {
             var client = CreateClient();
-            var response = await client.GetAsync($"{_apiSettings.ApiUrl}/categories/subcategories/{parentCategoryId}");
+            var response = await client.GetAsync(BuildApiUrl($"categories/subcategories/{parentCategoryId}"));
             response.EnsureSuccessStatusCode();
-            return await response.Content.ReadFromJsonAsync<List<Category>>(_jsonOptions) ?? new List<Category>();
+            return await response.Content.ReadFromJsonAsync<List<Category>>() ?? new List<Category>();
         }
     }
 }

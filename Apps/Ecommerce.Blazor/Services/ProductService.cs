@@ -21,10 +21,16 @@ namespace Ecommerce.Blazor.Services
 
         private HttpClient CreateClient() => _httpClientFactory.CreateClient(ApiClientName);
 
+        private string BuildApiUrl(string path)
+        {
+            // Ensures no double slashes in the final URL
+            return _apiSettings.ApiUrl.TrimEnd('/') + "/" + path.TrimStart('/');
+        }
+
         public async Task<List<Product>> GetProductsAsync()
         {
             var client = CreateClient();
-            var response = await client.GetAsync($"{_apiSettings.ApiUrl}/products");
+            var response = await client.GetAsync(BuildApiUrl("products"));
             response.EnsureSuccessStatusCode();
             return await response.Content.ReadFromJsonAsync<List<Product>>(_jsonOptions) ?? new List<Product>();
         }
@@ -34,7 +40,7 @@ namespace Ecommerce.Blazor.Services
             string sortBy = "", int page = 1, int pageSize = 10)
         {
             var client = CreateClient();
-            var requestUri = $"{_apiSettings.ApiUrl}/products/search?";
+            var requestUri = BuildApiUrl("products/search?");
             var queryParams = new List<string>();
 
             if (!string.IsNullOrEmpty(query))
@@ -68,7 +74,7 @@ namespace Ecommerce.Blazor.Services
             if (string.IsNullOrEmpty(query))
                 return new List<string>();
 
-            var requestUri = $"{_apiSettings.ApiUrl}/products/suggestions?query={Uri.EscapeDataString(query)}";
+            var requestUri = BuildApiUrl($"products/suggestions?query={Uri.EscapeDataString(query)}");
             var response = await client.GetAsync(requestUri);
             response.EnsureSuccessStatusCode();
             return await response.Content.ReadFromJsonAsync<List<string>>(_jsonOptions) ?? new List<string>();
@@ -89,14 +95,14 @@ namespace Ecommerce.Blazor.Services
                 Encoding.UTF8,
                 "application/json");
 
-            var response = await client.PostAsync($"{_apiSettings.ApiUrl}/products", content);
+            var response = await client.PostAsync(BuildApiUrl("products"), content);
             response.EnsureSuccessStatusCode();
         }
 
         public async Task IndexProductsAsync()
         {
             var client = CreateClient();
-            var response = await client.PostAsync($"{_apiSettings.ApiUrl}/products/index", null);
+            var response = await client.PostAsync(BuildApiUrl("products/index"), null);
             response.EnsureSuccessStatusCode();
         }
     }
