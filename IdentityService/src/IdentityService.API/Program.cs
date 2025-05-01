@@ -194,7 +194,7 @@ public static class Config
         new List<ApiScope>
         {
             // Define scopes that your APIs will protect
-            new ApiScope("ecommerce.api", "Full access to Ecommerce API") 
+            new ApiScope("productservice.api", "Full access to ProductService API") 
             // Add more scopes as needed, e.g., "product.read", "product.write"
         };
 
@@ -226,7 +226,7 @@ public static class Config
                     IdentityServerConstants.StandardScopes.OpenId, 
                     IdentityServerConstants.StandardScopes.Profile,
                     IdentityServerConstants.StandardScopes.Email,
-                    "ecommerce.api" // Allow access to our API scope
+                    "productservice.api" // Allow access to our API scope
                 },
 
                 // Ensure user claims like email are included in the ID token
@@ -245,7 +245,7 @@ public static class Config
                  ClientName = "API Gateway",
                  AllowedGrantTypes = GrantTypes.ClientCredentials,
                  ClientSecrets = { new Secret("your_gateway_secret".Sha256()) }, // Store securely!
-                 AllowedScopes = { "ecommerce.api" } 
+                 AllowedScopes = { "productservice.api" } 
              }
              */
         };

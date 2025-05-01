@@ -51,7 +51,7 @@ builder.Services.AddOidcAuthentication(options =>
     options.ProviderOptions.DefaultScopes.Add("openid");
     options.ProviderOptions.DefaultScopes.Add("profile");
     options.ProviderOptions.DefaultScopes.Add("email");
-    options.ProviderOptions.DefaultScopes.Add("ecommerce.api"); // Scope to access the API
+    options.ProviderOptions.DefaultScopes.Add("productservice.api"); // Scope to access the API
     // options.ProviderOptions.DefaultScopes.Add("offline_access"); // If refresh tokens needed
 
     // Map claims correctly for user info display
