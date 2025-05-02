@@ -1,0 +1,22 @@
+@using Microsoft.AspNetCore.Identity
+@using IdentityService.Domain.Entities
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+@{
+    var user = await UserManager.GetUserAsync(User);
+    var isAdmin = user != null && await UserManager.IsInRoleAsync(user, "Administrator");
+}
+
+@if (SignInManager.IsSignedIn(User) && isAdmin)
+{
+    <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Admin
+        </a>
+        <ul class="dropdown-menu" aria-labelledby="adminDropdown">
+            <li><a class="dropdown-item" asp-area="Identity" asp-page="/Admin/UserManagement">User Management</a></li>
+            <li><a class="dropdown-item" asp-area="Identity" asp-page="/Admin/RoleManagement">Role Management</a></li>
+        </ul>
+    </li>
+}

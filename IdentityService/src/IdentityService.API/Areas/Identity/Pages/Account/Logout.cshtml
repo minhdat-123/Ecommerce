@@ -1,0 +1,23 @@
+﻿@page
+@model LogoutModel
+@{
+    ViewData["Title"] = "Logging out...";
+}
+
+<div class="text-center">
+    <h1>@ViewData["Title"]</h1>
+    <p>You are being logged out...</p>
+</div>
+
+<form id="logoutForm" class="form-inline" asp-area="Identity" asp-page="/Account/Logout" 
+      asp-route-returnUrl="https://localhost:7235" method="post">
+</form>
+
+@section Scripts {
+    <script>
+        // Automatically trigger logout when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('logoutForm').submit();
+        });
+    </script>
+}
